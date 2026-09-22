@@ -1,5 +1,7 @@
 # MVP Ideation: Searchable Restaurant Menu Platform
 
+> This file is the brainstorm. The final build scope for the sprint is in `features.md`.
+
 ## Product Idea
 
 Build a simple searchable menu platform that helps diners find restaurant dishes based on:
@@ -69,22 +71,24 @@ The product flow should follow this sequence instead of showing a complicated fo
 
 - Customer home dashboard.
 - Search by dish, restaurant, ingredient, or area.
-- Dietary filters such as vegetarian, vegan, Jain, eggless, dairy-free, and gluten-free.
-- Include and exclude ingredient filters.
+- Dietary filters such as vegetarian, vegan, Jain, dairy-free, and gluten-free.
+- Avoid-ingredient filter (to find dishes with an ingredient, use search).
 - Spice-level filter: no spice, mild, medium, spicy, and very spicy.
 - Search results showing dish name, restaurant, price, tags, spice level, rating, and review count.
 - Dish detail page.
-- Ingredient list and ingredients to avoid.
+- Ingredient list and dietary tags.
 - Dish-level customer reviews.
 - Save to Favourites.
+- Login only for saving Favourites and writing reviews.
 - Restaurant phone number and address.
 - Verification status and last updated date.
 - Clear allergy and health disclaimer.
-- Simple admin data management through a spreadsheet or basic hidden page.
+- Simple admin page to add restaurants and add or edit dishes.
 
 ### Should-have
 
-- Search by neighbourhood or location.
+- Price filter.
+- Search using the user's current location.
 - Sort by best match, rating, price, or distance.
 - “Can be customised” label.
 - Review tags such as mild, good portion, tasty, and diet-friendly.
@@ -127,17 +131,20 @@ The product flow should follow this sequence instead of showing a complicated fo
 flowchart TD
     A[User opens website] --> B[Home dashboard]
     B --> C[Searches dish, restaurant, ingredient, or area]
-    C --> D[Applies dietary, ingredient, spice, price, or mood filters]
+    C --> D[Applies dietary, spice, or avoid-ingredient filters]
     D --> E[Views matching dishes]
     E --> F[Opens dish details]
     F --> G[Checks ingredients, tags, price, reviews, and update date]
     G --> H{Is the information clear and suitable?}
-    H -->|Yes| I[Saves to Favourites]
+    H -->|Yes| LG{Logged in?}
+    LG -->|Yes| I[Saves to Favourites]
+    LG -->|No| LI[Logs in or signs up]
+    LI --> I
     I --> J[Calls restaurant or gets directions]
     H -->|No| K[Checks verification status]
     K --> L[Contacts restaurant for confirmation]
     L --> M{Is the dish suitable?}
-    M -->|Yes| I
+    M -->|Yes| LG
     M -->|No| N[Returns to results and chooses another dish]
 ```
 
@@ -177,16 +184,15 @@ For the 4-day MVP, keep search simple. Do not promise that the system understand
 Example:
 
 ```text
-Diet: Vegetarian
-Avoid: Dairy
-Spice: Mild
-Price: Under ₹300
+Diet: Vegetarian, Dairy-free
+Avoid: Cashew
+Spice: Up to Mild
 ```
 
 Show selected filters clearly:
 
 ```text
-[Vegetarian ×] [Dairy-free ×] [Mild ×] [Under ₹300 ×]
+[Vegetarian ×] [Dairy-free ×] [No cashew ×] [Up to Mild ×]
 ```
 
 Also show the result count and a “Clear all” button.
@@ -211,14 +217,13 @@ Show:
 
 - Dish name and price.
 - Ingredients.
-- Ingredients to avoid.
 - Dietary tags.
 - Spice level.
-- Customisation options.
 - Customer reviews.
 - Restaurant confirmation status.
 - Last updated date.
 - Restaurant phone number and address.
+- Allergy and health disclaimer.
 - Save to Favourites button.
 
 Example:
@@ -232,13 +237,12 @@ Vegetarian · Dairy-free · Mild
 Ingredients:
 Noodles, mushroom, cabbage, carrot, soy sauce
 
-Can customise:
-Less spicy · No onion on request
-
 ★ 4.3 from 24 reviews
 
 Restaurant-confirmed: Yes
 Last updated: 21 September 2026
+
+Menu details can change. If you have an allergy, confirm with the restaurant.
 
 [Save to Favourites] [Call Restaurant]
 ```
@@ -250,18 +254,17 @@ Reviews should be connected to the dish, not only the restaurant.
 Show:
 
 - Overall rating.
-- Spice feedback.
-- Taste feedback.
-- Portion feedback.
-- Dietary accuracy feedback.
+- Review count.
 - Short customer comments.
-- Review date and review count.
+- Review date.
 
-Avoid showing strong percentages when there are too few reviews.
+If a dish has no reviews, show “No reviews yet.”
+
+Spice, taste, portion, and dietary-accuracy feedback can be added later as review tags.
 
 ### Step 7: Save to Favourites
 
-The user selects the heart icon.
+The user selects the heart icon. If they are not logged in, ask them to log in first.
 
 Show confirmation:
 
@@ -274,9 +277,8 @@ For the MVP, one general Favourites list is enough. Separate lists can be added 
 The user can:
 
 - Call the restaurant.
-- Get directions.
+- Get directions (open the address in Google Maps).
 - View the address.
-- Share the dish.
 - Return to results.
 
 Online ordering is outside the first MVP.
@@ -300,7 +302,7 @@ Example:
 
 > No dishes match Vegetarian + Dairy-free + Mild. Try removing one filter or view similar dishes.
 
-### Incorrect information
+### Incorrect information (Post-MVP)
 
 ```mermaid
 flowchart TD
@@ -318,7 +320,9 @@ Possible reasons:
 - Dish is unavailable.
 - Dietary tag is incorrect.
 
-### Saved dish unavailable
+### Saved dish unavailable (Post-MVP)
+
+In v1, an unavailable saved dish shows “Currently unavailable”. Similar-dish suggestions come later.
 
 ```mermaid
 flowchart TD
@@ -331,7 +335,6 @@ flowchart TD
 ```
 
 ---
-
 
 ## Criteria
 
