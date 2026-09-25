@@ -20,7 +20,7 @@ Search or filter → View dish details → Read reviews → Save to Favourites o
 |---|---|---|
 | **Guest** | Search, filter, view dishes and read reviews | No |
 | **Diner** | Everything a guest can do, plus save Favourites and write reviews | Yes |
-| **Admin** | Add restaurants, add dishes and edit dishes | Yes |
+<!-- | **Admin** | Add restaurants, add dishes and edit dishes | Yes | not for now--> 
 
 For v1, the admin adds all menu data. Restaurant owner accounts will come later.
 
@@ -41,9 +41,9 @@ For v1, the admin adds all menu data. Restaurant owner accounts will come later.
 | **4. Favourites** | Save favourite | Tap ♡ to save a dish | Create |
 | | View favourites | See all saved dishes in one list | Read |
 | | Remove favourite | Tap ♡ again to remove a dish | Delete |
-| **5. Admin** | Add restaurant | Add name, area, address and phone number | Create |
+<!-- | **5. Admin** | Add restaurant | Add name, area, address and phone number | Create |
 | | Add dish | Add a dish to a restaurant | Create |
-| | Edit dish | Fix dish details, mark it restaurant-confirmed, or mark it unavailable | Update |
+| | Edit dish | Fix dish details, mark it restaurant-confirmed, or mark it unavailable | Update | -->
 
 Each search result shows the dish name, restaurant, price, tags, spice level, average rating and review count.
 
@@ -96,10 +96,10 @@ GUEST / DINER
   ├── Save to Favourites   (login needed)
   └── Write a review       (login needed)
 
-ADMIN
+<!-- ADMIN
   ├── Add restaurant
   ├── Add dish
-  └── Edit dish
+  └── Edit dish -->
 ```
 
 ## Special cases
@@ -136,10 +136,10 @@ ADMIN
 | GET | `/api/favourites` | Get saved dishes | Diner |
 | POST | `/api/favourites` | Save a dish | Diner |
 | DELETE | `/api/favourites/:dishId` | Remove a saved dish | Diner |
-| GET | `/api/admin/dishes` | List all dishes, including unavailable ones | Admin |
+<!-- | GET | `/api/admin/dishes` | List all dishes, including unavailable ones | Admin |
 | POST | `/api/admin/restaurants` | Add a restaurant | Admin |
 | POST | `/api/admin/dishes` | Add a dish | Admin |
-| PUT | `/api/admin/dishes/:id` | Edit a dish | Admin |
+| PUT | `/api/admin/dishes/:id` | Edit a dish | Admin | -->
 
 Log out does not need an endpoint. The frontend deletes the saved login token.
 
