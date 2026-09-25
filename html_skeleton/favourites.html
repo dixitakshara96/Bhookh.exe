@@ -1,0 +1,101 @@
+{% load tz %}
+{% load mathfilters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIVAALA - Saved Favourites</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans'] }, colors: { primary:'#166534', accent:'#F59E0B', bg:'#F8FAFC' } } } }
+</script>
+<style>
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: block; }
+.htmx-request.htmx-indicator { display: block; }
+</style>
+</head>
+<body class="bg-bg font-sans text-slate-900" x-data="{ toast: '' }" @htmx:after-request="if($event.detail.successful) { toast = 'Updated!' ; setTimeout(() => toast = '', 3000) }">
+    <div x-show="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-2 rounded-xl shadow-lg z-50 font-semibold" x-text="toast" style="display: none;"></div>
+
+    <header class='bg-white border-b'>
+        <nav class='max-w-md mx-auto h-16 px-4 flex items-center justify-between'>
+            <h1 class='font-bold text-xl'>Saved Favourites</h1>
+            <button class='w-11 h-11'>☺</button>
+        </nav>
+    </header>
+    
+    <main class='max-w-md mx-auto p-4 space-y-4 mb-20'>
+        <h2 class='text-2xl font-bold'>{{ request.user.name|default:"My" }}'s List</h2>
+        
+        <!-- GET /api/v1/me/favourites -->
+        <section id='favourites-list' hx-get="/api/v1/me/favourites/htmx" hx-trigger="load">
+            
+            <!-- 1. LOADING STATE -->
+            <div class="htmx-indicator space-y-4 w-full">
+                <div class="bg-white rounded-xl border p-4 animate-pulse">
+                    <div class="h-4 bg-slate-200 rounded w-1/2 mb-3"></div>
+                    <div class="h-4 bg-slate-200 rounded w-1/4"></div>
+                </div>
+            </div>
+
+            <!-- Handled by partial rendering, but let's include logic for static preview -->
+            {% for fav in favourites %}
+                <article class='bg-white rounded-xl border p-4 mb-4 flex justify-between items-center'>
+                    <div>
+                        <h3 class='font-bold'>{{ fav.dish.name }}</h3>
+                        <p class='text-sm text-slate-600'>₹{% widthratio fav.dish.price 100 1 %}</p>
+                        <p class='text-xs text-slate-400'>
+                            {% timezone "Asia/Kolkata" %}{{ fav.created_at|date:"d M, Y" }}{% endtimezone %}
+                        </p>
+                    </div>
+                    <!-- REMOVE FROM FAVOURITES -->
+                    <button hx-delete="/api/v1/me/favourites/{{ fav.dish.id }}" 
+                            hx-target="#favourites-list"
+                            hx-swap="outerHTML"
+                            hx-disabled-elt="this"
+                            class="text-red-500 bg-red-50 p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="submit-text">Remove</span>
+                    </button>
+                </article>
+            {% empty %}
+                <!-- 3. EMPTY STATE -->
+                <div class="text-center py-10 bg-slate-50 border border-dashed rounded-xl">
+                    <p class="text-slate-500 mb-2">You haven't saved any favourites yet.</p>
+                    <a href="/" class="text-primary font-bold">Discover Dishes</a>
+                </div>
+            {% endfor %}
+            
+        </section>
+
+        <!-- 2. ERROR STATE -->
+        <div id="list-error" class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mt-4 text-center">
+            <p class="mb-2">Failed to load favourites.</p>
+            <button onclick="htmx.trigger('#favourites-list', 'load')" class="px-4 py-2 bg-red-600 text-white rounded-lg">Retry</button>
+        </div>
+    </main>
+
+    <nav class='fixed bottom-0 left-0 right-0 bg-white border-t h-16 z-40'>
+        <div class='max-w-md mx-auto grid grid-cols-2 h-full'>
+            <a href="/" class='flex flex-col items-center justify-center text-slate-500'>
+                🏠<span class='text-xs'>Home</span>
+            </a>
+            <a href="/favourites" class='flex flex-col items-center justify-center text-primary font-semibold'>
+                ♥<span class='text-xs'>Favourites</span>
+            </a>
+        </div>
+    </nav>
+    <script>
+        document.body.addEventListener('htmx:responseError', function(event) {
+            if (event.detail.elt.id === 'favourites-list') {
+                document.getElementById('list-error').classList.remove('hidden');
+                document.getElementById('favourites-list').innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
