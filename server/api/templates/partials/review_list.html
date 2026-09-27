@@ -1,0 +1,10 @@
+{% load tz %}
+
+{% for review in reviews %}
+    {% include "partials/review_item.html" with review=review %}
+{% empty %}
+    <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+        <p class="text-slate-500 font-medium mb-1">No reviews yet for this dish.</p>
+        <p class="text-sm font-semibold text-primary">Be the first to share your experience!</p>
+    </div>
+{% endfor %}

@@ -1,0 +1,12 @@
+{% load tz %}
+
+<article class='bg-white rounded-xl border p-4 mb-4 shadow-sm transition-all hover:shadow-md'>
+    <div class="flex justify-between items-start mb-2">
+        <h3 class='font-bold text-lg text-slate-800'>{{ review.user.name }}</h3>
+        <span class="text-accent font-bold bg-amber-50 px-2 py-1 rounded-lg text-sm">⭐ {{ review.rating }}/5</span>
+    </div>
+    <p class='text-xs text-slate-400 mb-3 font-medium'>
+        {% timezone "Asia/Kolkata" %}{{ review.created_at|date:"d M Y, h:i A" }} (IST){% endtimezone %}
+    </p>
+    <p class="text-slate-700 leading-relaxed">{{ review.comment|default:"<span class='italic text-slate-400'>No written experience provided.</span>" }}</p>
+</article>

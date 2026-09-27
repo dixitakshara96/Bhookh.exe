@@ -1,0 +1,137 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NIVAALA - Search Results</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-container": "#fea619", "on-primary-fixed-variant": "#005226", "on-tertiary-fixed": "#00210a", "surface-container-low": "#f2f3ff", "secondary-fixed-dim": "#ffb95f", "on-surface-variant": "#404940", "primary": "#004c22", "on-secondary-fixed": "#2a1700", "surface": "#faf8ff", "on-tertiary-container": "#81e394", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#653e00", "tertiary": "#004b1f", "error": "#ba1a1a", "on-secondary": "#ffffff", "secondary": "#855300", "inverse-surface": "#283044", "tertiary-container": "#00662d", "tertiary-fixed": "#95f8a7", "surface-container": "#eaedff", "background": "#faf8ff", "inverse-primary": "#8bd79b", "on-tertiary": "#ffffff", "on-background": "#131b2e", "outline": "#707a6f", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#005323", "error-container": "#ffdad6", "on-secondary-container": "#684000", "secondary-fixed": "#ffddb8", "on-primary-fixed": "#00210b", "inverse-on-surface": "#eef0ff", "on-primary-container": "#93e0a2", "on-error": "#ffffff", "tertiary-fixed-dim": "#79db8d", "on-surface": "#131b2e", "surface-dim": "#d2d9f4", "surface-tint": "#1f6c3a", "surface-container-high": "#e2e7ff", "primary-container": "#166534", "surface-bright": "#faf8ff", "primary-fixed": "#a6f4b5", "surface-container-highest": "#dae2fd", "on-error-container": "#93000a", "outline-variant": "#bfc9bd", "on-primary": "#ffffff", "primary-fixed-dim": "#8bd79b" } } }
+</script>
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: flex; }
+    .htmx-request.htmx-indicator { display: flex; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex justify-center">
+<main class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative pb-24 shadow-xl border-x border-outline-variant/30">
+    
+    <!-- Sticky Header & Search -->
+    <div class="sticky top-0 z-40 bg-primary backdrop-blur-md shadow-md pb-2">
+        <form hx-get="/api/v1/dishes/htmx" hx-target="#results-container" class="px-4 pt-4 pb-2 flex items-center justify-between gap-3">
+            <button type="button" onclick="window.location.href='/'" class="p-1.5 rounded-full hover:bg-primary-container transition-colors text-white">
+                <span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+            </button>
+            <div class="flex-1 relative">
+                <button type="submit" class="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-surface-container-low hover:text-white z-10">
+                    <span class="material-symbols-outlined text-lg">search</span>
+                </button>
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search dishes..." class="w-full pl-9 pr-8 py-2 rounded-xl bg-primary-container/50 border border-primary-container text-xs font-semibold text-white placeholder:text-surface-container-low/80 focus:outline-none focus:ring-2 focus:ring-surface-container-lowest">
+            </div>
+            <button type="button" onclick="window.location.href='/'" class="p-2 rounded-xl bg-primary-container/50 text-white border border-primary-container relative hover:bg-primary-container transition-colors">
+                <span class="material-symbols-outlined text-lg">tune</span>
+            </button>
+        </form>
+
+        <!-- Active Filter Chips -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar px-4 py-2" x-data="{
+            diet: new URLSearchParams(window.location.search).get('diet') ? new URLSearchParams(window.location.search).get('diet').split(',').filter(Boolean) : [],
+            spice: new URLSearchParams(window.location.search).get('spice'),
+            exclude: new URLSearchParams(window.location.search).get('exclude') ? new URLSearchParams(window.location.search).get('exclude').split(',').filter(Boolean) : [],
+            removeParam: function(key, valToRemove) {
+                let params = new URLSearchParams(window.location.search);
+                if (key === 'spice') {
+                    params.delete('spice');
+                } else {
+                    let current = params.get(key) ? params.get(key).split(',').filter(Boolean) : [];
+                    let updated = current.filter(v => v !== valToRemove);
+                    if (updated.length > 0) {
+                        params.set(key, updated.join(','));
+                    } else {
+                        params.delete(key);
+                    }
+                }
+                let newUrl = window.location.pathname + '?' + params.toString();
+                history.pushState(null, '', newUrl);
+                htmx.ajax('GET', '/api/v1/dishes/htmx?' + params.toString(), '#results-container');
+                
+                // Update local state for Alpine rendering
+                this.diet = params.get('diet') ? params.get('diet').split(',').filter(Boolean) : [];
+                this.spice = params.get('spice');
+                this.exclude = params.get('exclude') ? params.get('exclude').split(',').filter(Boolean) : [];
+            }
+        }">
+            <!-- Diet loop -->
+            <template x-for="d in diet" :key="d">
+                <button @click="removeParam('diet', d)" class="flex items-center gap-1 flex-shrink-0 px-3 py-1.5 rounded-full border border-primary text-primary bg-primary/5 text-xs font-bold transition-all hover:bg-primary/10">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    <span x-text="d.charAt(0).toUpperCase() + d.slice(1)"></span>
+                    <span class="material-symbols-outlined text-sm ml-1">close</span>
+                </button>
+            </template>
+            <!-- Spice chip -->
+            <template x-if="spice && spice !== '4'">
+                <button @click="removeParam('spice')" class="flex items-center gap-1 flex-shrink-0 px-3 py-1.5 rounded-full border border-secondary-container text-secondary-fixed-dim bg-secondary-container/10 text-xs font-bold transition-all hover:bg-secondary-container/20">
+                    <span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    <span x-text="'Max: ' + (spice==='0'?'Zero':spice==='1'?'Mild':spice==='2'?'Medium':'Spicy') + ' ('+spice+')'"></span>
+                    <span class="material-symbols-outlined text-sm ml-1">close</span>
+                </button>
+            </template>
+            <!-- Exclude loop -->
+            <template x-for="ex in exclude" :key="ex">
+                <button @click="removeParam('exclude', ex)" class="flex items-center gap-1 flex-shrink-0 px-3 py-1.5 rounded-full border border-error text-error bg-error/5 text-xs font-bold transition-all hover:bg-error/10">
+                    <span class="material-symbols-outlined text-[12px]">do_not_disturb</span>
+                    <span x-text="'No ' + ex"></span>
+                    <span class="material-symbols-outlined text-sm ml-1">close</span>
+                </button>
+            </template>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <main class="flex-1 px-4 py-4" id="results-container" hx-get="/api/v1/dishes/htmx?q={{ request.GET.q|urlencode }}&diet={{ request.GET.diet|urlencode }}&spice={{ request.GET.spice|urlencode }}&exclude={{ request.GET.exclude|urlencode }}" hx-trigger="load">
+        
+        <!-- Loading Skeleton -->
+        <div class="htmx-indicator flex flex-col gap-4 w-full">
+            <div class="bg-surface-container-low/60 rounded-xl p-4 animate-pulse flex gap-4 border border-outline-variant/40">
+                <div class="flex-1 py-2 space-y-3">
+                    <div class="h-4 bg-outline-variant/30 rounded w-3/4"></div>
+                    <div class="h-3 bg-outline-variant/30 rounded w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Nav Bar -->
+    <aside class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/30">
+        <div class="flex gap-2 border-t border-[#e9f2ec] bg-[#f9fbfa] px-4 pb-3 pt-2">
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#55916c]" href="/">
+                <div class="text-[#55916c] flex h-8 items-center justify-center" data-icon="House" data-size="24px" data-weight="regular">
+                    <span class="material-symbols-outlined">home</span>
+                </div>
+                <p class="text-[#55916c] text-xs font-medium leading-normal tracking-[0.015em]">Home</p>
+            </a>
+            <a class="just flex flex-1 flex-col items-center justify-end gap-1 text-[#55916c]" href="/favourites">
+                <div class="text-[#55916c] flex h-8 items-center justify-center" data-icon="GoogleDriveLogo" data-size="24px" data-weight="regular">
+                    <span class="material-symbols-outlined">favorite</span>
+                </div>
+                <p class="text-[#55916c] text-xs font-medium leading-normal tracking-[0.015em]">Favourites</p>
+            </a>
+        </div>
+    </aside>
+</main>
+<script>
+    document.body.addEventListener('htmx:responseError', function(evt) {
+        if(evt.detail.xhr.status === 401) window.location.href = '/login';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+{% load tz %}{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>NIVAALA - Authenticate</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-container": "#fea619", "surface-container-low": "#f2f3ff", "on-surface-variant": "#404940", "primary": "#004c22", "surface": "#faf8ff", "error": "#ba1a1a", "background": "#faf8ff", "surface-container-lowest": "#ffffff", "on-surface": "#131b2e", "primary-container": "#166534", "outline-variant": "#bfc9bd", } } } }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: block;
+        }
+
+        .htmx-request .submit-text {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex justify-center">
+    <main
+        class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative border-x border-outline-variant/30"
+        x-data="{ tab: 'signin', errorMessage: '' }">
+
+        <header class="px-4 py-4 flex items-center justify-between border-b border-outline-variant/30">
+            <a href="/" class="flex items-center gap-2">
+                <img src="{% static 'images/nivaala-logo.png' %}" alt="Nivaala Logo" class="h-10 w-auto object-contain">
+            </a>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center"><span
+                        class="material-symbols-outlined text-[16px]">person</span></div>
+                <button onclick="history.back()" class="p-1"><span
+                        class="material-symbols-outlined text-xl">close</span></button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto bg-surface-container-low/30 pb-10">
+
+            <!-- Context Banner -->
+            {% if request.GET.action %}
+            <div class="m-4 bg-[#eef1ff] border border-[#d6deff] rounded-xl p-4 flex items-start gap-3 relative">
+                <button class="absolute top-2 right-2 text-on-surface-variant"><span
+                        class="material-symbols-outlined text-[16px]">close</span></button>
+                <div class="w-10 h-10 rounded-full bg-[#a3f0b6] text-primary flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-primary flex items-center gap-1 uppercase tracking-wider">
+                        ACTION PAUSED <span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span> Dietary
+                        Passport
+                    </p>
+                    <p class="text-sm font-bold text-on-surface leading-tight mt-0.5">Please sign in to proceed</p>
+                    <p class="text-[11px] text-on-surface-variant mt-1 leading-snug">Sign in to preserve your
+                        cross-contact alerts and personal safe dish notes.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div
+                class="mx-4 bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-1 mt-4">
+
+                <!-- Tabs -->
+                <div class="flex bg-surface-container-low rounded-xl p-1 mb-4">
+                    <button @click="tab = 'signin'; errorMessage = ''"
+                        :class="tab === 'signin' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-white/50'"
+                        class="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">login</span> Sign In
+                    </button>
+                    <button @click="tab = 'signup'; errorMessage = ''"
+                        :class="tab === 'signup' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-white/50'"
+                        class="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span> Create Account
+                    </button>
+                </div>
+
+                <!-- Error Display -->
+                <div x-show="errorMessage" x-transition
+                    class="mx-3 mb-3 bg-red-50 text-red-600 border border-red-200 text-xs font-bold p-3 rounded-xl flex items-start gap-2"
+                    style="display: none;">
+                    <span class="material-symbols-outlined text-[16px]">error</span>
+                    <span x-text="errorMessage"></span>
+                </div>
+
+                <!-- Sign In Form -->
+                <form x-show="tab === 'signin'" hx-post="/api/v1/auth/login" hx-swap="none"
+                    @htmx:after-request="if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; } catch(e) { errorMessage = 'An error occurred.'; } }"
+                    class="px-3 pb-4">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-on-surface block mb-1">Email Address</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
+                            <input type="email" name="email" required
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-on-surface block mb-1">Password</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
+                            <input type="password" name="password" required
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                        </div>
+                    </div>
+
+                    <div class="bg-[#e4faeb] border border-[#bbf0cc] rounded-xl p-3 flex items-start gap-2 mb-4">
+                        <div
+                            class="w-6 h-6 rounded-full bg-[#8ee8a8] text-primary flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[14px]">shield</span></div>
+                        <p class="text-[10px] text-on-surface leading-snug">Strict Zero-Spam Policy. Credentials are
+                            only used to retain dietary passports.</p>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-primary-container text-white py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-[#022f13] transition-colors relative">
+                        <span class="submit-text">Sign In <span
+                                class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
+                        <span
+                            class="htmx-indicator material-symbols-outlined animate-spin text-[18px] absolute">refresh</span>
+                    </button>
+                </form>
+
+                <!-- Create Account Form -->
+                <form x-show="tab === 'signup'" hx-post="/api/v1/auth/register" hx-swap="none"
+                    @htmx:after-request="if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; if(err.error.fields && err.error.fields.email) { errorMessage = err.error.fields.email; } } catch(e) { errorMessage = 'Registration failed.'; } }"
+                    class="px-3 pb-4" style="display: none;">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-on-surface block mb-1">Full Name</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">badge</span>
+                            <input type="text" name="name" required
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-on-surface block mb-1">Email Address</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
+                            <input type="email" name="email" required
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-on-surface block mb-1">Password</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
+                            <input type="password" name="password" required minlength="6"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-primary-container text-white py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-[#022f13] transition-colors relative">
+                        <span class="submit-text">Create Account <span
+                                class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
+                        <span
+                            class="htmx-indicator material-symbols-outlined animate-spin text-[18px] absolute">refresh</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

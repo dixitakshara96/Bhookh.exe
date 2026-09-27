@@ -1,0 +1,104 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NIVAALA - Write Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans-serif'] }, colors: { primary: '#166534', accent: '#F59E0B', bg: '#F8FAFC', text: '#0F172A', secondary: '#64748B' } } } }
+</script>
+<style>.htmx-indicator{display:none;} .htmx-request .htmx-indicator{display:inline-block;} .htmx-request .submit-text{display:none;}</style>
+</head>
+<body class="bg-bg text-text font-sans antialiased" x-data="{ toast: '', errorToast: '' }" @htmx:after-request="if($event.detail.successful) { toast = 'Review Submitted!' ; setTimeout(() => { window.location.href='/dishes/{{ dish.id }}' }, 1500) } else { if($event.detail.xhr.status === 409) { errorToast = 'Already reviewed!'; } else { errorToast = 'Error submitting review. Please rate 1-5 stars.'; } setTimeout(() => { errorToast = '' }, 3000); }">
+    <div x-show="toast" x-transition.opacity class="fixed top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-full shadow-lg z-50 font-bold" x-text="toast" style="display: none;"></div>
+    <div x-show="errorToast" x-transition.opacity class="fixed top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg z-50 font-bold" x-text="errorToast" style="display: none;"></div>
+
+    <div class="max-w-[390px] mx-auto min-h-screen bg-white relative shadow-xl overflow-x-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="p-4 flex items-center justify-between border-b border-slate-100">
+            <button onclick="history.back()" class="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors">
+                <svg class="w-6 h-6 text-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+            <h1 class="text-lg font-bold text-text flex-1 text-center pr-8">Write Review</h1>
+        </header>
+
+        <main class="flex-1 p-6">
+            {% if dish %}
+            <div class="flex items-center gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Dish" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 class="font-bold text-text leading-tight">{{ dish.name }}</h2>
+                    <p class="text-xs font-semibold text-secondary mt-1">{{ dish.restaurant.name }}</p>
+                </div>
+            </div>
+            
+            <form hx-post="/api/v1/dishes/{{ dish.id }}/reviews" hx-swap="none" class="space-y-6" x-data="{ rating: 0 }">
+                {% csrf_token %}
+                
+                <!-- Star Rating -->
+                <div class="flex flex-col items-center mb-8 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-sm font-bold text-secondary mb-4 uppercase tracking-wider">Tap to Rate</p>
+                    <div class="flex gap-2">
+                        <template x-for="i in 5">
+                            <button type="button" @click="rating = i" class="p-1 focus:outline-none transition-transform hover:scale-110 active:scale-95">
+                                <svg class="w-10 h-10 transition-colors" :class="rating >= i ? 'text-accent' : 'text-slate-200'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                            </button>
+                        </template>
+                    </div>
+                    <input type="hidden" name="rating" x-model="rating" required>
+                </div>
+
+                <!-- Textarea -->
+                <div>
+                    <label class="block text-sm font-bold text-text mb-2 ml-1">Share your experience</label>
+                    <textarea name="comment" rows="5" placeholder="How was the food? Any cross-contamination issues?" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none font-bold shadow-inner"></textarea>
+                </div>
+
+                <!-- Safe Tags -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-text ml-1">Verify tags</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="taste_feedback" value="safe" class="hidden peer">
+                            <span class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-secondary peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all shadow-sm block">Allergen Safe</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="portion_feedback" value="generous" class="hidden peer">
+                            <span class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-secondary peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all shadow-sm block">Generous Portion</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-primary text-white rounded-xl py-4 font-bold shadow-lg hover:bg-emerald-800 transition-colors flex justify-center items-center gap-2">
+                        <span class="submit-text">Submit Review</span>
+                        <svg class="htmx-indicator w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4 border border-slate-200">
+                    <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-text mb-1">Dish not found</h3>
+                <p class="text-sm font-semibold text-secondary px-6">We couldn't locate the dish you're trying to review.</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+    <script>
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            if(evt.detail.xhr.status === 401) window.location.href = '/login';
+        });
+    </script>
+</body>
+</html>
