@@ -21,6 +21,7 @@ urlpatterns = [
     path('login', frontend_views.login_page, name='login'),
     path('search-results', frontend_views.search_results_page, name='search'),
     path('favourites', frontend_views.favourites_page, name='favourites'),
+    path('profile', frontend_views.profile_page, name='profile'),
     path('dishes/<int:dish_id>', frontend_views.dish_details_page, name='dish-details'),
     path('dishes/<int:dish_id>/reviews', frontend_views.dish_reviews_page, name='dish-reviews'),
 ]

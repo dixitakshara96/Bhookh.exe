@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-Bhookh.exe is an ingredient-level food discovery interface engineered to eliminate uncertainty for diners with dietary restrictions, specific spice preferences, and ingredient allergies. 
+Nivaala is an ingredient-level food discovery interface engineered to eliminate uncertainty for diners with dietary restrictions, specific spice preferences, and ingredient allergies. 
 
 This document defines the Minimum Viable Product user experience architecture across six core screens. It omits administrative operations and telephonic call capabilities, prioritizing digital transparency, frictionless discovery, and contextual, progressive authentication.
 

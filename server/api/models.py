@@ -47,14 +47,15 @@ class Dish(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='dishes')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default='')
-    price = models.IntegerField(help_text="Price in paise")
+    price = models.IntegerField(help_text="Price in paise", db_index=True)
     image_url = models.URLField(blank=True, null=True)
     ingredients = models.JSONField(default=list, blank=True)
     ingredients_to_avoid = models.JSONField(default=list, blank=True)
     dietary_tags = models.JSONField(default=list, blank=True)
-    spice_level = models.IntegerField(default=0)
+    spice_level = models.IntegerField(default=0, db_index=True)
+    sweet_level = models.IntegerField(default=0, db_index=True)
     can_be_customised = models.BooleanField(default=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

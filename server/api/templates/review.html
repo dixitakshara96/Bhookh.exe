@@ -32,7 +32,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
             {% if dish %}
             <div class="flex items-center gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
                 <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Dish" class="w-full h-full object-cover">
+                    <img loading="lazy" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Dish" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <h2 class="font-bold text-text leading-tight">{{ dish.name }}</h2>

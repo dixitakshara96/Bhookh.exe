@@ -4,7 +4,7 @@ from .decorators import optional_auth
 @optional_auth
 def index_page(request):
     from .models import Dish
-    trending_dishes = Dish.objects.all()[:2]
+    trending_dishes = Dish.objects.select_related('restaurant').all()[:6]
     return render(request, 'index.html', {'trending_dishes': trending_dishes})
 
 @optional_auth
@@ -28,3 +28,7 @@ def dish_reviews_page(request, dish_id):
     from .models import Dish
     dish = Dish.objects.filter(id=dish_id).first()
     return render(request, 'review.html', {'dish': dish})
+
+@optional_auth
+def profile_page(request):
+    return render(request, 'profile.html')

@@ -1,171 +1,194 @@
 {% load tz %}{% load static %}
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>NIVAALA - Ingredient-Level Food Discovery</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="https://unpkg.com/htmx.org@1.9.6"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: { extend: { colors: { "secondary-container": "#fea619", "on-primary-fixed-variant": "#005226", "on-tertiary-fixed": "#00210a", "surface-container-low": "#f2f3ff", "secondary-fixed-dim": "#ffb95f", "on-surface-variant": "#404940", "primary": "#004c22", "on-secondary-fixed": "#2a1700", "surface": "#faf8ff", "on-tertiary-container": "#81e394", "surface-variant": "#dae2fd", "on-secondary-fixed-variant": "#653e00", "tertiary": "#004b1f", "error": "#ba1a1a", "on-secondary": "#ffffff", "secondary": "#855300", "inverse-surface": "#283044", "tertiary-container": "#00662d", "tertiary-fixed": "#95f8a7", "surface-container": "#eaedff", "background": "#faf8ff", "inverse-primary": "#8bd79b", "on-tertiary": "#ffffff", "on-background": "#131b2e", "outline": "#707a6f", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#005323", "error-container": "#ffdad6", "on-secondary-container": "#684000", "secondary-fixed": "#ffddb8", "on-primary-fixed": "#00210b", "inverse-on-surface": "#eef0ff", "on-primary-container": "#93e0a2", "on-error": "#ffffff", "tertiary-fixed-dim": "#79db8d", "on-surface": "#131b2e", "surface-dim": "#d2d9f4", "surface-tint": "#1f6c3a", "surface-container-high": "#e2e7ff", "primary-container": "#166534", "surface-bright": "#faf8ff", "primary-fixed": "#a6f4b5", "surface-container-highest": "#dae2fd", "on-error-container": "#93000a", "outline-variant": "#bfc9bd", "on-primary": "#ffffff", "primary-fixed-dim": "#8bd79b" } } }
-    }
-  </script>
-<style>
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-</style>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NIVAALA - Ingredient-Level Food Discovery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
 </head>
-<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex justify-center selection:bg-primary-container selection:text-white">
-<main class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative pb-36 shadow-xl border-x border-outline-variant/30" x-data="{ query: '', spice: 0, diet: [], exclude: [], newExclude: '' }">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 px-4 pt-3 pb-2.5">
-        <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-                <a href="/" class="shrink-0 flex items-center">
-                    <img src="{% static 'images/nivaala-logo.png' %}" alt="Nivaala Logo" class="h-12 w-auto object-contain">
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col" x-data="{ query: '', spice: 0, sweet: 0, priceMax: 200000, diet: [], exclude: [], newExclude: '' }">
+    
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <a href="/" class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900">NIVAALA</span>
+        </a>
+        <div class="hidden md:flex items-center gap-8">
+            <a href="/" class="text-primary font-bold transition">Home</a>
+            <a href="/favourites" class="text-slate-500 hover:text-primary font-medium transition">Favourites</a>
+            <a href="/profile" class="text-slate-500 hover:text-primary font-medium transition">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            {% if request.user.is_authenticated %}
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition border border-slate-200">
+                    <span class="material-symbols-outlined text-slate-400">person</span>
+                    <span class="font-semibold text-sm">{{ request.user.name }}</span>
+                </button>
+                <div x-show="open" @click.away="open = false" style="display: none;" class="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
+                    <a href="/profile" class="block px-4 py-3 text-sm font-medium hover:bg-slate-50 transition">My Profile</a>
+                    <button hx-delete="/api/v1/auth/logout" class="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-slate-100">Logout</button>
+                </div>
+            </div>
+            {% else %}
+            <a href="/login" class="bg-primary text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-primary-dark transition-colors">Sign In</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        <!-- Filters Sidebar -->
+        <aside class="lg:col-span-3 space-y-8">
+            <div>
+                <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Discover Safe Food.</h2>
+                <p class="text-slate-500 font-medium text-sm">Tailor your culinary journey precisely to your body's needs.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+                <!-- Dietary -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dietary Baselines</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="d in ['vegetarian', 'vegan', 'jain', 'dairy-free', 'gluten-free']">
+                            <button @click="diet.includes(d) ? diet = diet.filter(i => i !== d) : diet.push(d)" 
+                                    :class="diet.includes(d) ? 'bg-primary text-white border-primary shadow-md transform scale-105' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'"
+                                    class="px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200">
+                                <span x-text="d.charAt(0).toUpperCase() + d.slice(1)"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Spice -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Spice Tolerance</h3>
+                    <div class="grid grid-cols-5 gap-2">
+                        <template x-for="level in [0,1,2,3,4]">
+                            <button @click="spice = level" 
+                                    :class="spice === level ? 'bg-orange-500 text-white shadow-lg scale-110' : 'bg-surface-dark text-slate-600 hover:bg-slate-200'"
+                                    class="flex flex-col items-center p-2 rounded-xl transition-all duration-200">
+                                <span class="material-symbols-outlined text-sm mb-1" :class="spice === level ? 'text-white' : 'text-orange-400'">local_fire_department</span>
+                                <span class="text-[10px] font-bold" x-text="level"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Exclude -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Strict Exclusions</h3>
+                    <div class="flex items-center gap-2">
+                        <input x-model="newExclude" @keydown.enter="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="flex-1 px-4 py-2.5 rounded-xl bg-surface-dark border-none text-sm focus:ring-2 focus:ring-red-500 transition" placeholder="e.g. Peanuts">
+                        <button @click="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-700 transition">Add</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <template x-for="ex in exclude" :key="ex">
+                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 text-xs font-bold">
+                                <span x-text="ex"></span>
+                                <button @click="exclude = exclude.filter(i => i !== ex)" class="hover:text-red-900 ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+                
+                <button @click="window.location.href = `/search-results?q=${query}&spice=${spice}&sweet=${sweet}&price_max=${priceMax}&diet=${diet.join(',')}&exclude=${exclude.join(',')}`" class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:bg-primary-dark transition-all transform hover:-translate-y-1">
+                    <span class="material-symbols-outlined">search</span> Search Dishes
+                </button>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <section class="lg:col-span-9">
+            <div class="flex items-end justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Trending Near You</h2>
+                    <p class="text-slate-500 font-medium mt-1">Highly rated, transparent dishes in your area.</p>
+                </div>
+                <a href="/search-results" class="text-primary font-bold hover:underline flex items-center gap-1">View all <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for dish in trending_dishes %}
+                <a href="/dishes/{{ dish.id }}" class="group block bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden transform hover:-translate-y-2">
+                    <div class="h-48 w-full relative overflow-hidden bg-slate-100">
+                        {% if dish.image_url %}
+                        <img loading="lazy" src="{{ dish.image_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="{{ dish.name }}">
+                        {% else %}
+                        <img loading="lazy" src="https://placehold.co/600x400/e2e8f0/475569?text={{ dish.name|urlencode }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="{{ dish.name }}">
+                        {% endif %}
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-sm">
+                            <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                            <span class="text-xs font-bold text-slate-800">4.5</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-slate-900 mb-1 leading-tight group-hover:text-primary transition-colors">{{ dish.name }}</h3>
+                        <p class="text-sm font-semibold text-slate-500 flex items-center gap-1 mb-4">
+                            <span class="material-symbols-outlined text-[16px]">storefront</span> {{ dish.restaurant.name }}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for tag in dish.dietary_tags|slice:":3" %}
+                            <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">{{ tag }}</span>
+                            {% endfor %}
+                            <span class="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-[12px]">local_fire_department</span> Lvl {{ dish.spice_level }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span class="text-lg font-extrabold text-slate-900">₹{% widthratio dish.price 100 1 %}</span>
+                            <span class="text-xs font-bold text-primary flex items-center gap-1">Details <span class="material-symbols-outlined text-sm">arrow_right_alt</span></span>
+                        </div>
+                    </div>
                 </a>
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">Verified</span>
-                    </div>
-                    <p class="text-[11px] text-on-surface-variant font-medium leading-tight mt-0.5">Know what is in your food</p>
-                </div>
+                {% endfor %}
             </div>
-            <div class="flex items-center gap-1.5 bg-surface-container py-1 pl-2.5 pr-1 rounded-full border border-outline-variant/40">
-                <span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">account_circle</span>
-                <span class="text-xs font-semibold text-on-surface leading-none pr-1">{% if request.user.is_authenticated %}{{ request.user.name }}{% else %}Guest Diner{% endif %}</span>
-                {% if request.user.is_authenticated %}
-                <button hx-delete="/api/v1/auth/logout" class="p-1 bg-surface-container-lowest rounded-full text-error shadow-sm hover:bg-error/10 transition-colors" title="Logout">
-                    <span class="material-symbols-outlined text-[14px]">logout</span>
-                </button>
-                {% endif %}
-            </div>
-        </div>
-    </header>
+        </section>
+    </main>
 
-
-
-    <!-- 3. Dietary Preferences -->
-    <section class="px-4 mt-4">
-        <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-                <h2 class="text-xs font-bold text-on-surface uppercase tracking-wider">Dietary Baselines</h2>
-                <span x-show="diet.length > 0" class="bg-primary/10 text-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full" x-text="diet.length + ' Active'"></span>
-            </div>
-            <button @click="diet = []" class="text-[11px] font-semibold text-on-surface-variant hover:text-error">Reset</button>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <template x-for="d in ['vegetarian', 'vegan', 'jain', 'dairy-free', 'gluten-free']">
-                <button @click="diet.includes(d) ? diet = diet.filter(i => i !== d) : diet.push(d)" 
-                        :class="diet.includes(d) ? 'bg-primary-container text-white border-transparent' : 'bg-surface-container-low border-outline-variant/60 text-on-surface'"
-                        class="flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition-transform">
-                    <span x-show="diet.includes(d)" class="material-symbols-outlined text-xs">check</span>
-                    <span x-text="d.charAt(0).toUpperCase() + d.slice(1)"></span>
-                </button>
-            </template>
-        </div>
-    </section>
-
-    <!-- 4. Spice Ceiling -->
-    <section class="px-4 mt-5">
-        <div class="bg-surface-container-low/70 border border-outline-variant/50 rounded-xl p-3.5">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <h3 class="text-xs font-bold text-on-surface flex items-center gap-1.5">
-                        Spice Ceiling Tolerance
-                        <span class="text-[10px] bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.5 rounded font-bold">Clinical Cap</span>
-                    </h3>
-                    <p class="text-[11px] text-on-surface-variant mt-0.5">Maximum heat permitted: <span class="font-bold text-primary" x-text="spice === 0 ? 'Zero' : spice === 1 ? 'Mild' : spice === 2 ? 'Medium' : spice === 3 ? 'Spicy' : 'Very Hot'"></span></p>
-                </div>
-                <span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">thermostat</span>
-            </div>
-            <div class="grid grid-cols-5 gap-1.5 mt-3">
-                <template x-for="level in [0,1,2,3,4]">
-                    <button @click="spice = level" 
-                            :class="spice === level ? 'bg-primary-container text-white border-primary-container ring-2 ring-primary/20 scale-[1.02]' : 'bg-surface border-outline-variant/40 hover:bg-surface-container'"
-                            class="flex flex-col items-center justify-center p-2 rounded-lg border transition-all">
-                        <span class="text-[11px] font-bold" :class="spice === level ? 'text-white' : 'text-on-surface'" x-text="level"></span>
-                        <span class="text-[9px]" :class="spice === level ? 'text-white/90' : 'text-on-surface-variant'" x-text="['Zero','Mild','Med','Spicy','V.Hot'][level]"></span>
-                    </button>
-                </template>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. Exclude & Allergies -->
-    <section class="px-4 mt-5">
-        <div class="flex items-center gap-1.5 mb-1.5">
-            <h2 class="text-xs font-bold text-on-surface uppercase tracking-wider">Exclude &amp; Allergies</h2>
-            <span class="bg-error/10 text-error text-[10px] font-bold px-1.5 py-0.2 rounded-full border border-error/20">Strict Exclusion</span>
-        </div>
-        <div class="flex items-center gap-2 mt-1.5">
-            <input x-model="newExclude" @keydown.enter="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="flex-1 px-3 py-2 text-xs rounded-xl bg-surface-container-low border border-outline-variant/60 focus:ring-2 focus:ring-error" placeholder="Type ingredient (e.g., Cashew)..." type="text"/>
-            <button @click="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="bg-surface-container border border-outline-variant/70 text-on-surface hover:bg-primary hover:text-white px-3 py-2 rounded-xl text-xs font-bold transition-colors">Add</button>
-        </div>
-        <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
-            <template x-for="ex in exclude" :key="ex">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-error-container/70 border border-error/30 text-on-error-container text-xs font-bold">
-                    <span x-text="'🚫 ' + ex"></span>
-                    <button @click="exclude = exclude.filter(i => i !== ex)" class="hover:text-error ml-0.5 p-2 -mr-2 flex items-center justify-center"><span class="material-symbols-outlined text-xs">close</span></button>
-                </span>
-            </template>
-        </div>
-    </section>
-
-    <!-- 6. Trending Dishes -->
-    <section class="px-4 mt-6 border-t border-outline-variant/30 pt-4">
-        <div class="flex items-center justify-between mb-2">
-            <h2 class="text-sm font-extrabold text-on-surface">Trending Near You</h2>
-            <a href="/search-results" class="text-xs text-primary font-bold">View all</a>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-            {% for dish in trending_dishes %}
-            <a href="/dishes/{{ dish.id }}" class="block bg-surface-container-lowest rounded-xl border border-outline-variant/40 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="h-24 w-full bg-surface-container relative">
-                    <img src="{{ dish.image_url|default:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}" class="w-full h-full object-cover" alt="{{ dish.name }}">
-                    <div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
-                        <span class="material-symbols-outlined text-[10px] text-secondary-container" style="font-variation-settings: 'FILL' 1;">star</span>
-                        <span class="text-[9px] font-bold text-on-surface">4.5</span>
-                    </div>
-                </div>
-                <div class="p-2">
-                    <h3 class="text-xs font-bold text-on-surface truncate">{{ dish.name }}</h3>
-                    <p class="text-[9px] text-on-surface-variant truncate mt-0.5">{{ dish.restaurant_name }}</p>
-                    <div class="mt-1.5 flex flex-wrap gap-1">
-                        {% for tag in dish.dietary_tags|slice:":2" %}
-                        <span class="bg-primary/10 text-primary-container text-[8px] font-bold px-1.5 py-0.5 rounded capitalize">{{ tag|title }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
+    <!-- Mobile Bottom Nav -->
+    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200">
+        <div class="flex justify-around px-4 py-3">
+            <a href="/" class="flex flex-col items-center text-primary">
+                <span class="material-symbols-outlined text-2xl">home</span>
+                <span class="text-[10px] font-bold">Home</span>
             </a>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Sticky Discovery Primary Action CTA -->
-    <aside class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/30">
-        <div class="px-4 pt-2.5 pb-1">
-            <button @click="window.location.href = `/search-results?q=${query}&spice=${spice}&diet=${diet.join(',')}&exclude=${exclude.join(',')}`" class="w-full bg-primary-container text-white py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:brightness-105 transition-all">
-                <span>Find Dishes</span>
-                <span class="material-symbols-outlined text-lg">arrow_forward</span>
-            </button>
-        </div>
-        <div class="flex gap-2 border-t border-[#e9f2ec] bg-[#f9fbfa] px-4 pb-3 pt-2">
-            <a class="flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-primary" href="/">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
-                <p class="text-[10px] font-bold">Home</p>
+            <a href="/search-results" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">search</span>
+                <span class="text-[10px] font-bold">Search</span>
             </a>
-            <a class="flex flex-1 flex-col items-center justify-end gap-1 text-on-surface-variant" href="/favourites">
-                <span class="material-symbols-outlined">favorite</span>
-                <p class="text-[10px] font-bold">Favourites</p>
+            <a href="/favourites" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">favorite</span>
+                <span class="text-[10px] font-bold">Saved</span>
+            </a>
+            <a href="/profile" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">person</span>
+                <span class="text-[10px] font-bold">Profile</span>
             </a>
         </div>
     </aside>
-</main>
-</body></html>
+</body>
+</html>

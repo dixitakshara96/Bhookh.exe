@@ -168,6 +168,7 @@ def get_dishes(request):
     include = request.GET.get('include')
     exclude = request.GET.get('exclude')
     spice = request.GET.get('spice')
+    sweet = request.GET.get('sweet')
     price_max = request.GET.get('price_max')
     area = request.GET.get('area')
     
@@ -189,6 +190,11 @@ def get_dishes(request):
             qs = qs.filter(spice_level__lte=int(spice))
         except ValueError:
             return JsonResponse({"error": {"code": "INVALID_QUERY_PARAMETERS", "message": "Invalid spice parameter", "fields": {}}}, status=400)
+    if sweet:
+        try:
+            qs = qs.filter(sweet_level__lte=int(sweet))
+        except ValueError:
+            return JsonResponse({"error": {"code": "INVALID_QUERY_PARAMETERS", "message": "Invalid sweet parameter", "fields": {}}}, status=400)
     if price_max:
         try:
             qs = qs.filter(price__lte=int(price_max))
@@ -208,7 +214,7 @@ def get_dishes(request):
             "id": dish.id, "restaurant_id": dish.restaurant_id, "category_id": dish.category_id,
             "name": dish.name, "description": dish.description, "price": dish.price, 
             "ingredients": dish.ingredients, "ingredients_to_avoid": dish.ingredients_to_avoid,
-            "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level,
+            "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level, "sweet_level": dish.sweet_level,
             "can_be_customised": dish.can_be_customised, "is_active": dish.is_active,
             "last_updated": format_iso_datetime(dish.last_updated) if hasattr(dish, 'last_updated') else None,
             "restaurant": {
@@ -245,7 +251,7 @@ def get_dish_details(request, dish_id):
             "id": dish.id, "restaurant_id": dish.restaurant_id, "category_id": dish.category_id,
             "name": dish.name, "description": dish.description, "price": dish.price,
             "ingredients": dish.ingredients, "ingredients_to_avoid": dish.ingredients_to_avoid,
-            "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level, 
+            "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level, "sweet_level": dish.sweet_level, 
             "can_be_customised": dish.can_be_customised, "is_active": dish.is_active,
             "last_updated": format_iso_datetime(dish.last_updated) if hasattr(dish, 'last_updated') else None,
             "restaurant": {

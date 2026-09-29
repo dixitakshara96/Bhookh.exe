@@ -1,86 +1,104 @@
-{% load tz %}{% load static %}
+{% load tz %}
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>NIVAALA - Saved Favourites</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="https://unpkg.com/htmx.org@1.9.6"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script id="tailwind-config">
-    tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-container": "#fea619", "surface-container-low": "#f2f3ff", "on-surface-variant": "#404940", "primary": "#004c22", "surface": "#faf8ff", "error": "#ba1a1a", "background": "#faf8ff", "surface-container-lowest": "#ffffff", "on-surface": "#131b2e", "primary-container": "#166534", "outline-variant": "#bfc9bd", } } } }
-</script>
-<style>
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    .htmx-indicator { display: none; }
-    .htmx-request .htmx-indicator { display: flex; }
-    .htmx-request.htmx-indicator { display: flex; }
-</style>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NIVAALA - Saved Favourites</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: flex; }
+        .htmx-request.htmx-indicator { display: flex; }
+    </style>
 </head>
-<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex justify-center">
-<main class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative pb-24 border-x border-outline-variant/30">
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
     
-    <!-- Header -->
-    <header class="px-4 py-3 flex items-center justify-between border-b border-outline-variant/30 sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur">
-        <div class="flex items-center gap-2">
-            <a href="/" class="shrink-0 flex items-center">
-                <img src="{% static 'images/nivaala-logo.png' %}" alt="Nivaala Logo" class="h-12 w-auto object-contain">
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <a href="/" class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 hidden sm:block">NIVAALA</span>
+        </a>
+        <div class="hidden md:flex items-center gap-8">
+            <a href="/" class="text-slate-500 hover:text-primary font-medium transition">Home</a>
+            <a href="/favourites" class="text-primary font-bold transition">Favourites</a>
+            <a href="/profile" class="text-slate-500 hover:text-primary font-medium transition">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/profile" class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition border border-slate-200">
+                <span class="material-symbols-outlined text-slate-400">person</span>
+                <span class="font-semibold text-sm">{{ request.user.name|default:"Guest" }}</span>
             </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
+        <div class="flex items-center gap-3 mb-8">
+            <span class="material-symbols-outlined text-4xl text-red-500" style="font-variation-settings: 'FILL' 1;">favorite</span>
             <div>
-                <h1 class="text-base font-bold leading-none">Saved Favourites</h1>
+                <h1 class="text-3xl font-extrabold text-slate-900 leading-tight">Your Saved Dishes</h1>
+                <p class="text-slate-500 font-medium text-sm">Dishes you've marked as safe and delicious.</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <div class="bg-[#e4efff] text-[#002f6c] px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-primary"></span>
-                <span class="text-[10px] font-bold">Verified Diner</span>
-            </div>
-            <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">person</span></div>
-        </div>
-    </header>
 
-
-
-    <!-- Main List Area -->
-    <main class="flex-1 px-4 py-4" id="favourites-container" hx-get="/api/v1/me/favourites/htmx" hx-trigger="load">
-        
-        <div class="htmx-indicator flex flex-col gap-4 w-full">
-            <div class="bg-surface-container-low/60 rounded-xl p-4 animate-pulse flex gap-4 border border-outline-variant/40">
-                <div class="flex-1 py-2 space-y-3">
-                    <div class="h-4 bg-outline-variant/30 rounded w-3/4"></div>
-                    <div class="h-3 bg-outline-variant/30 rounded w-1/2"></div>
+        <div id="favourites-container" hx-get="/api/v1/me/favourites/htmx" hx-trigger="load">
+            <!-- Loading Skeleton -->
+            <div class="htmx-indicator grid grid-cols-1 md:grid-cols-2 gap-6 w-full animate-pulse">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex gap-4">
+                    <div class="w-24 h-24 bg-slate-200 rounded-2xl shrink-0"></div>
+                    <div class="flex-1 space-y-3 py-2">
+                        <div class="h-5 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                    </div>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- Bottom Nav Bar -->
-    <aside class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/30">
-        <div class="flex gap-2 border-t border-[#e9f2ec] bg-[#f9fbfa] px-4 pb-3 pt-2">
-            <a class="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#55916c]" href="/">
-                <div class="text-[#55916c] flex h-8 items-center justify-center">
-                    <span class="material-symbols-outlined">home</span>
-                </div>
-                <p class="text-[#55916c] text-xs font-medium leading-normal">Home</p>
+    <!-- Mobile Bottom Nav -->
+    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200">
+        <div class="flex justify-around px-4 py-3">
+            <a href="/" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">home</span>
+                <span class="text-[10px] font-bold">Home</span>
             </a>
-            <a class="just flex flex-1 flex-col items-center justify-end gap-1 text-[#0f1a13]" href="/favourites">
-                <div class="text-[#0f1a13] flex h-8 items-center justify-center">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
-                </div>
-                <p class="text-[#0f1a13] text-xs font-medium leading-normal">Favourites</p>
+            <a href="/search-results" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">search</span>
+                <span class="text-[10px] font-bold">Search</span>
+            </a>
+            <a href="/favourites" class="flex flex-col items-center text-primary">
+                <span class="material-symbols-outlined text-2xl">favorite</span>
+                <span class="text-[10px] font-bold">Saved</span>
+            </a>
+            <a href="/profile" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">person</span>
+                <span class="text-[10px] font-bold">Profile</span>
             </a>
         </div>
     </aside>
-</main>
-<script>
-    document.body.addEventListener('htmx:responseError', function(evt) {
-        if(evt.detail.xhr.status === 401) window.location.href = '/login';
-    });
-</script>
+
+    <script>
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            if(evt.detail.xhr.status === 401) window.location.href = '/login';
+        });
+    </script>
 </body>
 </html>

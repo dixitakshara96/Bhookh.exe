@@ -1,0 +1,151 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NIVAALA - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+    
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <a href="/" class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 hidden sm:block">NIVAALA</span>
+        </a>
+        <div class="hidden md:flex items-center gap-8">
+            <a href="/" class="text-slate-500 hover:text-primary font-medium transition">Home</a>
+            <a href="/favourites" class="text-slate-500 hover:text-primary font-medium transition">Favourites</a>
+            <a href="/profile" class="text-primary font-bold transition">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button hx-delete="/api/v1/auth/logout" class="bg-red-50 text-red-600 px-6 py-2 rounded-full font-bold shadow-sm hover:bg-red-100 transition-colors">Sign Out</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-10">
+        
+        {% if request.user.is_authenticated %}
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row items-center gap-8">
+            <div class="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center text-primary text-5xl font-bold shrink-0">
+                {{ request.user.name|make_list|first|upper }}
+            </div>
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl font-extrabold text-slate-900 mb-1">{{ request.user.name }}</h1>
+                <p class="text-slate-500 font-medium mb-4">{{ request.user.email }}</p>
+                <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">verified</span> Verified Diner
+                    </span>
+                    <span class="bg-slate-50 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+                        Joined {{ request.user.created_at|date:"M Y"|default:"Recently" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Account Settings -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">manage_accounts</span> Account Details
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
+                        <p class="text-sm font-semibold text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100">{{ request.user.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
+                        <p class="text-sm font-semibold text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100">{{ request.user.email }}</p>
+                    </div>
+                </div>
+                <button onclick="alert('Profile editing coming soon!')" class="w-full mt-6 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-xl font-bold transition-colors">
+                    Edit Profile
+                </button>
+            </div>
+
+            <!-- Dietary Snapshot -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">health_and_safety</span> Safety Preferences
+                </h3>
+                <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-4 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-orange-500">local_fire_department</span>
+                    <div>
+                        <p class="text-sm font-bold text-orange-900">Spice Tolerance</p>
+                        <p class="text-xs text-orange-800/80">You can update your preferred spice ceiling directly on the discovery page.</p>
+                    </div>
+                </div>
+                <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-red-500">warning</span>
+                    <div>
+                        <p class="text-sm font-bold text-red-900">Active Allergies</p>
+                        <p class="text-xs text-red-800/80">Manage your strict exclusions (e.g. Peanuts, Shellfish) dynamically while searching.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Unauthenticated State -->
+        <div class="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-primary/10 text-primary rounded-full mb-6">
+                <span class="material-symbols-outlined text-5xl">person_off</span>
+            </div>
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">You are not signed in</h2>
+            <p class="text-slate-500 font-medium mb-8 max-w-sm mx-auto">Create an account to save your dietary preferences, save favourite dishes, and leave trusted reviews.</p>
+            <a href="/login" class="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-primary-dark transition-colors inline-block">Sign In / Register</a>
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200">
+        <div class="flex justify-around px-4 py-3">
+            <a href="/" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">home</span>
+                <span class="text-[10px] font-bold">Home</span>
+            </a>
+            <a href="/search-results" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">search</span>
+                <span class="text-[10px] font-bold">Search</span>
+            </a>
+            <a href="/favourites" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">favorite</span>
+                <span class="text-[10px] font-bold">Saved</span>
+            </a>
+            <a href="/profile" class="flex flex-col items-center text-primary">
+                <span class="material-symbols-outlined text-2xl">person</span>
+                <span class="text-[10px] font-bold">Profile</span>
+            </a>
+        </div>
+    </aside>
+
+    <script>
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            if(evt.detail.xhr.status === 401) window.location.href = '/login';
+        });
+    </script>
+</body>
+</html>
