@@ -171,11 +171,20 @@ def get_dishes(request):
     sweet = request.GET.get('sweet')
     price_max = request.GET.get('price_max')
     area = request.GET.get('area')
+    high_protein = request.GET.get('high_protein') == 'true'
+    low_calorie = request.GET.get('low_calorie') == 'true'
+    calories_max = request.GET.get('calories_max')
+    protein_min = request.GET.get('protein_min')
+    cuisine = request.GET.get('cuisine')
     
     qs = Dish.objects.filter(is_active=True).select_related('restaurant')
 
     if q:
-        qs = qs.filter(name__icontains=q) | qs.filter(description__icontains=q)
+        from django.db.models import Q
+        q_obj = Q()
+        for word in q.split():
+            q_obj |= Q(name__icontains=word) | Q(description__icontains=word)
+        qs = qs.filter(q_obj)
     if diet:
         for d in diet.split(','):
             qs = qs.filter(dietary_tags__contains=[d.strip()])
@@ -183,8 +192,29 @@ def get_dishes(request):
         for i in include.split(','):
             qs = qs.filter(ingredients__contains=[i.strip()])
     if exclude:
-        for e in exclude.split(','):
-            qs = qs.exclude(ingredients__contains=[e.strip()])
+        exclude_list = [e.strip() for e in exclude.split(',') if e.strip()]
+    else:
+        exclude_list = []
+
+    if request.user and request.user.is_authenticated:
+        try:
+            prefs = request.user.preferences
+            if prefs.allergies:
+                exclude_list.extend(prefs.allergies)
+            if not spice and prefs.default_spice > 0:
+                spice = str(prefs.default_spice)
+            if not sweet and prefs.default_sweetness > 0:
+                sweet = str(prefs.default_sweetness)
+        except getattr(request.user, 'preferences').RelatedObjectDoesNotExist if hasattr(request.user, 'preferences') else Exception:
+            pass
+
+    if exclude_list:
+        from django.db.models import Q
+        for e in set(exclude_list):
+            qs = qs.exclude(
+                Q(ingredients__contains=[e]) | 
+                Q(ingredients_to_avoid__contains=[e])
+            )
     if spice:
         try:
             qs = qs.filter(spice_level__lte=int(spice))
@@ -202,6 +232,22 @@ def get_dishes(request):
             return JsonResponse({"error": {"code": "INVALID_QUERY_PARAMETERS", "message": "Invalid price parameter", "fields": {}}}, status=400)
     if area:
         qs = qs.filter(restaurant__area__icontains=area)
+    if high_protein:
+        qs = qs.filter(protein__gte=20)
+    if low_calorie:
+        qs = qs.filter(calories__lte=400)
+    if calories_max:
+        try:
+            qs = qs.filter(calories__lte=int(calories_max))
+        except ValueError:
+            pass
+    if protein_min:
+        try:
+            qs = qs.filter(protein__gte=int(protein_min))
+        except ValueError:
+            pass
+    if cuisine:
+        qs = qs.filter(cuisine__icontains=cuisine)
 
     total_items = qs.count()
     total_pages = math.ceil(total_items / limit) if total_items > 0 else 0
@@ -215,6 +261,8 @@ def get_dishes(request):
             "name": dish.name, "description": dish.description, "price": dish.price, 
             "ingredients": dish.ingredients, "ingredients_to_avoid": dish.ingredients_to_avoid,
             "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level, "sweet_level": dish.sweet_level,
+            "calories": dish.calories, "protein": dish.protein, "carbs": dish.carbs, "fat": dish.fat,
+            "cuisine": dish.cuisine, "is_healthy": dish.is_healthy,
             "can_be_customised": dish.can_be_customised, "is_active": dish.is_active,
             "last_updated": format_iso_datetime(dish.last_updated) if hasattr(dish, 'last_updated') else None,
             "restaurant": {
@@ -242,9 +290,16 @@ def get_dish_details(request, dish_id):
         return JsonResponse({"error": {"code": "DISH_NOT_FOUND", "message": "Dish not found", "fields": {}}}, status=404)
 
     if is_htmx(request) or request.path.endswith('/htmx'):
-        reviews_agg = dish.reviews.aggregate(count=Count('id'))
-        dish.rating_summary = {'count': reviews_agg['count']}
-        return render(request, 'partials/dish_details.html', {'dish': dish})
+        reviews_agg = dish.reviews.aggregate(avg=Avg('rating'), count=Count('id'))
+        dish.rating_summary = {
+            'average': round(reviews_agg['avg'], 1) if reviews_agg['avg'] else 0.0, 
+            'count': reviews_agg['count']
+        }
+        all_allergens = ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']
+        return render(request, 'partials/dish_details.html', {
+            'dish': dish, 
+            'all_allergens': all_allergens
+        })
 
     return JsonResponse({
         "data": {
@@ -252,6 +307,8 @@ def get_dish_details(request, dish_id):
             "name": dish.name, "description": dish.description, "price": dish.price,
             "ingredients": dish.ingredients, "ingredients_to_avoid": dish.ingredients_to_avoid,
             "dietary_tags": dish.dietary_tags, "spice_level": dish.spice_level, "sweet_level": dish.sweet_level, 
+            "calories": dish.calories, "protein": dish.protein, "carbs": dish.carbs, "fat": dish.fat,
+            "cuisine": dish.cuisine, "is_healthy": dish.is_healthy,
             "can_be_customised": dish.can_be_customised, "is_active": dish.is_active,
             "last_updated": format_iso_datetime(dish.last_updated) if hasattr(dish, 'last_updated') else None,
             "restaurant": {
@@ -302,7 +359,12 @@ def dish_reviews(request, dish_id):
         if not user:
             return unauthorized_response()
 
-        data = parse_json_body(request)
+        data = {}
+        if request.content_type == 'application/json':
+            data = parse_json_body(request)
+        else:
+            data = request.POST
+
         try:
             rating = int(data.get('rating'))
         except (TypeError, ValueError):
@@ -412,6 +474,39 @@ def remove_favourite(request, dish_id):
         return HttpResponse("") # Removes element from DOM if swapped outerHTML
         
     return JsonResponse({"data": None, "message": "Dish removed from favourites."}, status=200)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@require_auth
+def update_preferences(request):
+    data = parse_json_body(request)
+    from .models import UserPreference
+    prefs, _ = UserPreference.objects.get_or_create(user=request.user)
+    
+    allergies = data.get('allergies', '')
+    if isinstance(allergies, list):
+        prefs.allergies = allergies
+    else:
+        prefs.allergies = [a.strip() for a in allergies.split(',') if a.strip()]
+        
+    try:
+        prefs.default_spice = int(data.get('default_spice', 0))
+    except (ValueError, TypeError):
+        pass
+        
+    try:
+        prefs.default_sweetness = int(data.get('default_sweetness', 0))
+    except (ValueError, TypeError):
+        pass
+        
+    prefs.save()
+    
+    if is_htmx(request) or request.path.endswith('/htmx'):
+        # For HTMX, return a success message or trigger a refresh
+        response = HttpResponse('<div class="text-emerald-600 font-bold text-sm bg-emerald-50 p-3 rounded-xl border border-emerald-200">Preferences updated successfully.</div>')
+        return response
+        
+    return JsonResponse({"data": None, "message": "Preferences updated."}, status=200)
 
 @csrf_exempt
 @require_http_methods(["GET"])

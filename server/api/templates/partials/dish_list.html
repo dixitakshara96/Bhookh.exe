@@ -15,7 +15,7 @@
             </div>
             
             {% if dish.ingredients_to_avoid %}
-            <div class="absolute top-4 left-4 bg-red-600/90 backdrop-blur-sm text-white rounded-lg px-2 py-1 flex items-center gap-1 shadow-md">
+            <div class="absolute top-4 left-4 bg-red-600/90 backdrop-blur-sm text-white rounded-xl px-2 py-1 flex items-center gap-1 shadow-md">
                 <span class="material-symbols-outlined text-[12px]">warning</span>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Allergens</span>
             </div>
@@ -30,9 +30,9 @@
             
             <div class="flex flex-wrap gap-2 mb-4">
                 {% for tag in dish.dietary_tags|slice:":3" %}
-                <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">{{ tag }}</span>
+                <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-xl uppercase tracking-wider">{{ tag }}</span>
                 {% endfor %}
-                <span class="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-wider">
+                <span class="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-xl flex items-center gap-1 uppercase tracking-wider">
                     <span class="material-symbols-outlined text-[12px]">local_fire_department</span> Lvl {{ dish.spice_level }}
                 </span>
             </div>
@@ -46,11 +46,14 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="text-center py-20 fade-in">
-    <div class="inline-flex items-center justify-center w-24 h-24 bg-slate-100 text-slate-400 rounded-full mb-6">
-        <span class="material-symbols-outlined text-5xl">search_off</span>
+<div class="text-center py-20 fade-in w-full col-span-full">
+    <div class="inline-flex items-center justify-center w-24 h-24 bg-red-50 text-red-400 rounded-full mb-6 shadow-sm border border-red-100">
+        <span class="material-symbols-outlined text-5xl">no_meals</span>
     </div>
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-2">No matching dishes</h2>
-    <p class="text-slate-500 font-medium">Try loosening your dietary filters or searching for something else.</p>
+    <h2 class="text-2xl font-extrabold text-slate-900 mb-2">No dishes match your dietary preferences.</h2>
+    <p class="text-slate-500 font-medium mb-6">We prioritize your safety. No dishes could be found matching all your strict requirements.</p>
+    <button type="button" onclick="document.querySelector('[x-data]').__x.$data.clearAll()" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-primary transition-colors flex items-center gap-2 mx-auto">
+        <span class="material-symbols-outlined text-[18px]">restart_alt</span> Reset Filters
+    </button>
 </div>
 {% endif %}

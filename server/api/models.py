@@ -54,6 +54,12 @@ class Dish(models.Model):
     dietary_tags = models.JSONField(default=list, blank=True)
     spice_level = models.IntegerField(default=0, db_index=True)
     sweet_level = models.IntegerField(default=0, db_index=True)
+    calories = models.IntegerField(null=True, blank=True)
+    protein = models.IntegerField(null=True, blank=True)
+    carbs = models.IntegerField(null=True, blank=True)
+    fat = models.IntegerField(null=True, blank=True)
+    cuisine = models.CharField(max_length=100, blank=True, null=True)
+    is_healthy = models.BooleanField(default=False)
     can_be_customised = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True, db_index=True)
     last_updated = models.DateTimeField(auto_now=True)
@@ -87,3 +93,12 @@ class Favourite(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user', 'dish'], name='unique_user_dish_favourite')
         ]
+
+class UserPreference(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
+    allergies = models.JSONField(default=list, blank=True)
+    default_spice = models.IntegerField(default=0)
+    default_sweetness = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'user_preferences'

@@ -1,4 +1,4 @@
-{% load tz %}
+{% load tz %}{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,141 +15,274 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                    colors: { 
+                        primary: "#16A34A", 
+                        "primary-dark": "#15803D", 
+                        accent: "#F59E0B",
+                        "accent-dark": "#D97706",
+                        surface: "#F8FAF8", 
+                        "surface-dark": "#e2e8f0" 
+                    },
+                    borderRadius: {
+                        'xl': '24px',
+                        '2xl': '24px',
+                        '3xl': '24px',
+                        '4xl': '24px'
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(22, 163, 74, 0.04)',
+                        'md': '0 4px 16px rgba(22, 163, 74, 0.08)',
+                        'lg': '0 10px 24px rgba(22, 163, 74, 0.12)',
+                        'xl': '0 20px 40px rgba(22, 163, 74, 0.16)',
+                        '2xl': '0 25px 50px rgba(22, 163, 74, 0.20)',
+                    }
                 }
             }
         }
     </script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
         .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .htmx-indicator { display: none; }
-        .htmx-request .htmx-indicator { display: flex; }
-        .htmx-request.htmx-indicator { display: flex; }
+        .htmx-request .htmx-indicator { display: block; }
+        .htmx-request.htmx-indicator { display: block; }
+        .range-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 99px; outline: none; }
+        .range-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #059669; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     </style>
 </head>
-<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col"
+      x-data="{
+          q: new URLSearchParams(window.location.search).get('q') || '',
+          exclude: new URLSearchParams(window.location.search).get('exclude') ? new URLSearchParams(window.location.search).get('exclude').split(',') : [],
+          spice: new URLSearchParams(window.location.search).get('spice') || '',
+          sweet: new URLSearchParams(window.location.search).get('sweet') || '',
+          priceMax: new URLSearchParams(window.location.search).get('price_max') || '',
+          caloriesMax: new URLSearchParams(window.location.search).get('calories_max') || '',
+          proteinMin: new URLSearchParams(window.location.search).get('protein_min') || '',
+          cuisine: new URLSearchParams(window.location.search).get('cuisine') || '',
+          diet: new URLSearchParams(window.location.search).get('diet') ? new URLSearchParams(window.location.search).get('diet').split(',') : [],
+          submitForm() {
+              this.$nextTick(() => { 
+                  let form = document.getElementById('search-form');
+                  // Update URL using HTMX push-url feature which is enabled on the form
+                  htmx.trigger(form, 'submit'); 
+              });
+          },
+          clearAll() {
+              this.q = ''; this.exclude = []; this.spice = ''; this.sweet = '';
+              this.priceMax = ''; this.caloriesMax = ''; this.proteinMin = '';
+              this.cuisine = ''; this.diet = [];
+              this.submitForm();
+          }
+      }">
     
     <!-- Navbar -->
-    <nav class="glass sticky top-0 z-50 px-6 py-4 flex flex-col gap-4 shadow-sm">
-        <div class="flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
-                <span class="text-2xl font-extrabold tracking-tight text-slate-900 hidden sm:block">NIVAALA</span>
-            </a>
-            
-            <form hx-get="/api/v1/dishes/htmx" hx-target="#results-container" class="flex-1 max-w-2xl mx-4 sm:mx-8 relative">
-                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search for Biryani, Vegan options..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full shadow-sm text-sm font-medium focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
-                <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-slate-50 text-slate-500 rounded-full hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined text-[20px]">tune</span>
-                </button>
-            </form>
-
-            <div class="hidden md:flex items-center gap-4">
-                {% if request.user.is_authenticated %}
-                <a href="/profile" class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition border border-slate-200">
-                    <span class="material-symbols-outlined text-slate-400">person</span>
-                    <span class="font-semibold text-sm">{{ request.user.name }}</span>
-                </a>
-                {% else %}
-                <a href="/login" class="bg-primary text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-primary-dark transition-colors">Sign In</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Active Filters -->
-        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" x-data="{
-            diet: new URLSearchParams(window.location.search).get('diet') ? new URLSearchParams(window.location.search).get('diet').split(',').filter(Boolean) : [],
-            spice: new URLSearchParams(window.location.search).get('spice'),
-            exclude: new URLSearchParams(window.location.search).get('exclude') ? new URLSearchParams(window.location.search).get('exclude').split(',').filter(Boolean) : [],
-            removeParam: function(key, valToRemove) {
-                let params = new URLSearchParams(window.location.search);
-                if (key === 'spice') { params.delete('spice'); }
-                else {
-                    let current = params.get(key) ? params.get(key).split(',').filter(Boolean) : [];
-                    let updated = current.filter(v => v !== valToRemove);
-                    if (updated.length > 0) params.set(key, updated.join(',')); else params.delete(key);
-                }
-                let newUrl = window.location.pathname + '?' + params.toString();
-                history.pushState(null, '', newUrl);
-                htmx.ajax('GET', '/api/v1/dishes/htmx?' + params.toString(), '#results-container');
-                this.diet = params.get('diet') ? params.get('diet').split(',').filter(Boolean) : [];
-                this.spice = params.get('spice');
-                this.exclude = params.get('exclude') ? params.get('exclude').split(',').filter(Boolean) : [];
-            }
-        }">
-            <template x-for="d in diet" :key="d">
-                <button @click="removeParam('diet', d)" class="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-bold hover:bg-emerald-100 transition-colors shrink-0 shadow-sm">
-                    <span x-text="d.charAt(0).toUpperCase() + d.slice(1)"></span>
-                    <span class="material-symbols-outlined text-[14px]">close</span>
-                </button>
-            </template>
-            <template x-if="spice && spice !== '4'">
-                <button @click="removeParam('spice')" class="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-orange-800 text-xs font-bold hover:bg-orange-100 transition-colors shrink-0 shadow-sm">
-                    <span class="material-symbols-outlined text-[14px]">local_fire_department</span>
-                    <span x-text="'Spice Max: ' + spice"></span>
-                    <span class="material-symbols-outlined text-[14px]">close</span>
-                </button>
-            </template>
-            <template x-for="ex in exclude" :key="ex">
-                <button @click="removeParam('exclude', ex)" class="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-red-200 bg-red-50 text-red-800 text-xs font-bold hover:bg-red-100 transition-colors shrink-0 shadow-sm">
-                    <span class="material-symbols-outlined text-[14px]">block</span>
-                    <span x-text="'No ' + ex"></span>
-                    <span class="material-symbols-outlined text-[14px]">close</span>
-                </button>
-            </template>
+        <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 h-[72px] flex items-center justify-between shadow-sm">
+        <a href="/" class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 mt-1">NIVAALA</span>
+        </a>
+        <div class="flex items-center gap-6 hidden md:flex">
+            <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
+            <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
+            <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
         </div>
     </nav>
 
-    <!-- Results Area -->
-    <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-10" id="results-container" {% if request.GET.q or request.GET.diet or request.GET.spice or request.GET.exclude %} hx-get="/api/v1/dishes/htmx?q={{ request.GET.q|urlencode }}&diet={{ request.GET.diet|urlencode }}&spice={{ request.GET.spice|urlencode }}&exclude={{ request.GET.exclude|urlencode }}" hx-trigger="load" {% endif %}>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {% if not request.GET.q and not request.GET.diet and not request.GET.spice and not request.GET.exclude %}
-        <!-- Empty / Suggestions State -->
-        <div class="text-center py-20">
-            <div class="inline-flex items-center justify-center w-24 h-24 bg-emerald-50 text-primary rounded-full mb-6">
-                <span class="material-symbols-outlined text-5xl">manage_search</span>
-            </div>
-            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">What are you craving safely?</h2>
-            <p class="text-slate-500 font-medium mb-10 max-w-lg mx-auto">Use the search bar above or quickly tap one of the safe categories below to start exploring verified dishes.</p>
+        <!-- Form wrapper for HTMX -->
+        <form id="search-form" hx-get="/api/v1/dishes/htmx" hx-target="#dish-results" hx-swap="innerHTML" hx-push-url="true" class="contents" @submit.prevent>
             
-            <div class="flex flex-wrap justify-center gap-4 max-w-3xl mx-auto">
-                <a href="?q=Biryani" class="px-6 py-4 bg-white border border-slate-200 shadow-sm rounded-2xl hover:shadow-md hover:border-primary hover:text-primary transition-all font-bold text-slate-700 flex flex-col items-center gap-2 w-32">
-                    <span class="text-3xl">🍲</span> Biryani
-                </a>
-                <a href="?q=Paneer" class="px-6 py-4 bg-white border border-slate-200 shadow-sm rounded-2xl hover:shadow-md hover:border-primary hover:text-primary transition-all font-bold text-slate-700 flex flex-col items-center gap-2 w-32">
-                    <span class="text-3xl">🧀</span> Paneer
-                </a>
-                <a href="?q=Pizza" class="px-6 py-4 bg-white border border-slate-200 shadow-sm rounded-2xl hover:shadow-md hover:border-primary hover:text-primary transition-all font-bold text-slate-700 flex flex-col items-center gap-2 w-32">
-                    <span class="text-3xl">🍕</span> Pizza
-                </a>
-                <a href="?q=Dessert" class="px-6 py-4 bg-white border border-slate-200 shadow-sm rounded-2xl hover:shadow-md hover:border-primary hover:text-primary transition-all font-bold text-slate-700 flex flex-col items-center gap-2 w-32">
-                    <span class="text-3xl">🍨</span> Dessert
-                </a>
-            </div>
-        </div>
-        {% else %}
-        <!-- HTMX Indicator Loading Skeleton -->
-        <div class="htmx-indicator grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 animate-pulse">
-                <div class="h-48 bg-slate-200 rounded-2xl mb-4"></div>
-                <div class="h-6 bg-slate-200 rounded w-3/4 mb-3"></div>
-                <div class="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
-                <div class="flex gap-2"><div class="h-6 w-16 bg-slate-200 rounded-md"></div><div class="h-6 w-16 bg-slate-200 rounded-md"></div></div>
-            </div>
-            <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 animate-pulse hidden md:block">
-                <div class="h-48 bg-slate-200 rounded-2xl mb-4"></div>
-                <div class="h-6 bg-slate-200 rounded w-3/4 mb-3"></div>
-                <div class="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
-                <div class="flex gap-2"><div class="h-6 w-16 bg-slate-200 rounded-md"></div><div class="h-6 w-16 bg-slate-200 rounded-md"></div></div>
-            </div>
-        </div>
-        {% endif %}
+            <!-- Hidden inputs synced with Alpine to send data -->
+            <input type="hidden" name="q" :value="q">
+            <input type="hidden" name="exclude" :value="exclude.join(',')">
+            <input type="hidden" name="diet" :value="diet.join(',')">
+            <input type="hidden" name="spice" :value="spice">
+            <input type="hidden" name="sweet" :value="sweet">
+            <input type="hidden" name="price_max" :value="priceMax">
+            <input type="hidden" name="calories_max" :value="caloriesMax">
+            <input type="hidden" name="protein_min" :value="proteinMin">
+            <input type="hidden" name="cuisine" :value="cuisine">
+
+            <!-- Sidebar Filters -->
+            <aside class="lg:col-span-3 space-y-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 self-start sticky top-24 max-h-[85vh] overflow-y-auto no-scrollbar">
+                
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-extrabold text-slate-900">Filters</h2>
+                    <button type="button" @click="clearAll()" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wider">Clear All</button>
+                </div>
+
+                <!-- Allergens -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Allergens (Strict)</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="a in ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']">
+                            <button type="button" @click="exclude.includes(a) ? exclude = exclude.filter(i => i !== a) : exclude.push(a)" 
+                                    :class="exclude.includes(a) ? 'bg-red-500 text-white border-red-500 shadow-md' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'"
+                                    class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]" x-show="exclude.includes(a)">block</span>
+                                <span x-text="a"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Spice & Sweetness -->
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Spice Level</h3>
+                            <span class="text-xs font-bold text-orange-600" x-text="spice ? 'Max: ' + spice : 'Any'"></span>
+                        </div>
+                        <input type="range" x-model="spice" min="0" max="5" step="1" class="range-slider">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Sweetness</h3>
+                            <span class="text-xs font-bold text-pink-600" x-text="sweet ? 'Max: ' + sweet : 'Any'"></span>
+                        </div>
+                        <input type="range" x-model="sweet" min="0" max="5" step="1" class="range-slider" style="background: linear-gradient(90deg, #e2e8f0 0%, #fbcfe8 100%);">
+                    </div>
+                </div>
+
+                <!-- Budget -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Max Price</h3>
+                        <span class="text-xs font-bold text-blue-600" x-text="priceMax ? '₹' + (priceMax/100) : 'Any'"></span>
+                    </div>
+                    <input type="range" x-model="priceMax" min="10000" max="100000" step="5000" class="range-slider">
+                </div>
+
+                <!-- Nutrition -->
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Max Calories</h3>
+                            <span class="text-xs font-bold text-emerald-600" x-text="caloriesMax ? caloriesMax + ' kcal' : 'Any'"></span>
+                        </div>
+                        <input type="range" x-model="caloriesMax" min="100" max="1500" step="50" class="range-slider">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Min Protein (g)</h3>
+                            <span class="text-xs font-bold text-emerald-600" x-text="proteinMin ? proteinMin + 'g+' : 'Any'"></span>
+                        </div>
+                        <input type="range" x-model="proteinMin" min="0" max="80" step="5" class="range-slider">
+                    </div>
+                </div>
+
+                <!-- Diet & Cuisine -->
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Diet</h3>
+                        <div class="flex gap-2">
+                            <button type="button" @click="diet.includes('vegetarian') ? diet = diet.filter(i => i !== 'vegetarian') : (diet.push('vegetarian'), diet = diet.filter(i=>i!=='vegan'))" :class="diet.includes('vegetarian') ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'" class="flex-1 px-3 py-2 rounded-xl text-xs font-bold border transition-colors">Vegetarian</button>
+                            <button type="button" @click="diet.includes('vegan') ? diet = diet.filter(i => i !== 'vegan') : (diet.push('vegan'), diet = diet.filter(i=>i!=='vegetarian'))" :class="diet.includes('vegan') ? 'bg-primary text-white border-primary shadow-sm' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'" class="flex-1 px-3 py-2 rounded-xl text-xs font-bold border transition-colors">Vegan</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Cuisine</h3>
+                        <select x-model="cuisine" class="w-full bg-surface-dark border-none rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary py-2.5">
+                            <option value="">Any Cuisine</option>
+                            <option value="Indian">Indian</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Continental">Continental</option>
+                            <option value="Thai">Thai</option>
+                            <option value="American">American</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" @click="submitForm()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-primary transition-colors flex items-center justify-center gap-2 mt-4">
+                    <span class="material-symbols-outlined text-[18px]">filter_list</span> Apply Filters
+                </button>
+            </aside>
+
+            <!-- Results Side -->
+            <section class="lg:col-span-9 flex flex-col">
+                
+                <!-- Search Bar & Active Chips -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8">
+                    <div class="relative flex items-center gap-3">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                            <input type="text" x-model="q" @keydown.enter="submitForm()" placeholder="Search by dish name or ingredient..." class="w-full pl-12 pr-4 py-3 bg-surface border border-slate-200 rounded-xl shadow-sm text-sm font-medium focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                        </div>
+                        <button type="button" @click="submitForm()" class="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-primary-dark transition-colors h-full flex items-center gap-2">
+                            Search
+                        </button>
+                    </div>
+
+                    <!-- Active Chips Row -->
+                    <div class="flex flex-wrap gap-2 mt-4" x-show="exclude.length > 0 || spice || sweet || priceMax || caloriesMax || proteinMin || cuisine || diet.length > 0" style="display: none;">
+                        <template x-for="a in exclude">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200 cursor-pointer hover:bg-red-200 transition-colors" @click="exclude = exclude.filter(i => i !== a); submitForm();">
+                                No <span x-text="a"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="spice">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200 cursor-pointer hover:bg-orange-200 transition-colors" @click="spice = ''; submitForm();">
+                                Spice: <span x-text="spice"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="sweet">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs font-bold border border-pink-200 cursor-pointer hover:bg-pink-200 transition-colors" @click="sweet = ''; submitForm();">
+                                Sweet: <span x-text="sweet"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="priceMax">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors" @click="priceMax = ''; submitForm();">
+                                Max ₹<span x-text="priceMax/100"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="caloriesMax">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200 cursor-pointer hover:bg-emerald-200 transition-colors" @click="caloriesMax = ''; submitForm();">
+                                &lt; <span x-text="caloriesMax"></span> kcal <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="proteinMin">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200 cursor-pointer hover:bg-emerald-200 transition-colors" @click="proteinMin = ''; submitForm();">
+                                &gt; <span x-text="proteinMin"></span>g Protein <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-if="cuisine">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200 cursor-pointer hover:bg-purple-200 transition-colors" @click="cuisine = ''; submitForm();">
+                                <span x-text="cuisine"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                        <template x-for="d in diet">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200 cursor-pointer hover:bg-emerald-200 transition-colors" @click="diet = diet.filter(i => i !== d); submitForm();">
+                                <span x-text="d"></span> <span class="material-symbols-outlined text-[14px]">close</span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- HTMX Loading Indicator -->
+                <div class="htmx-indicator w-full py-12 text-center text-slate-400">
+                    <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+                    <p class="font-bold text-sm mt-2">Searching safe dishes...</p>
+                </div>
+
+                <!-- HTMX Results Container -->
+                <!-- We trigger load if there is a query string, else it shows the initial partial load. But the prompt said No filters + empty search -> Show all dishes. Let's just always load dishes on first page view -->
+                <div id="dish-results" aria-live="polite" hx-get="/api/v1/dishes/htmx{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" hx-trigger="load">
+                    <!-- Results will load here -->
+                </div>
+
+            </section>
+        </form>
     </main>
 
     <!-- Mobile Bottom Nav -->
-    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200">
+    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 pb-safe">
+        <!-- identical to index.html -->
         <div class="flex justify-around px-4 py-3">
             <a href="/" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-2xl">home</span>
@@ -170,10 +303,9 @@
         </div>
     </aside>
 
-    <script>
-        document.body.addEventListener('htmx:responseError', function(evt) {
-            if(evt.detail.xhr.status === 401) window.location.href = '/login';
-        });
-    </script>
+
+    <footer class="hidden md:block py-8 text-center text-slate-500 text-sm mt-auto border-t border-slate-200 bg-white/50">
+        © 2026 NIVAALA. Eat with confidence.
+    </footer>
 </body>
 </html>

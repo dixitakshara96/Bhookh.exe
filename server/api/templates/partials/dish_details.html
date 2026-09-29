@@ -1,117 +1,224 @@
 {% load tz %}
 {% if dish %}
 <!-- Image Header -->
-<div class="relative w-full h-[400px] bg-slate-100">
+<div class="relative w-full h-[450px] bg-slate-100">
     {% if dish.image_url %}
     <img src="{{ dish.image_url }}" class="w-full h-full object-cover" alt="{{ dish.name }}">
     {% else %}
-    <img src="https://placehold.co/800x600/e2e8f0/475569?text={{ dish.name|urlencode }}" class="w-full h-full object-cover" alt="{{ dish.name }}">
+    <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=1200&q=80" class="w-full h-full object-cover" alt="{{ dish.name }}">
     {% endif %}
     
     <!-- Gradient Overlay -->
-    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
     
-    <!-- Badges -->
-    <div class="absolute bottom-6 left-8 flex flex-wrap gap-2">
-        {% for tag in dish.dietary_tags %}
-        <span class="bg-emerald-500/90 backdrop-blur text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1">
-            <span class="material-symbols-outlined text-[14px]">eco</span> {{ tag }}
-        </span>
-        {% endfor %}
+    <!-- Badges & Cuisine -->
+    <div class="absolute bottom-6 left-8 right-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <span class="inline-block bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 mb-3 rounded-full uppercase tracking-widest border border-white/30">
+                {{ dish.cuisine|default:"Global Cuisine" }}
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2">{{ dish.name }}</h1>
+            <p class="text-white/80 font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">storefront</span> {{ dish.restaurant.name }}
+            </p>
+        </div>
+        <div class="flex flex-col items-end gap-3">
+            <span class="bg-primary text-white font-extrabold text-2xl px-5 py-2.5 rounded-2xl shadow-lg">₹{% widthratio dish.price|default:0 100 1 %}</span>
+            <div class="flex gap-2">
+                <span class="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 border border-orange-400">
+                    <span class="material-symbols-outlined text-[14px]">local_fire_department</span> Spice {{ dish.spice_level|default:0 }}/5
+                </span>
+                <span class="bg-pink-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 border border-pink-400">
+                    <span class="material-symbols-outlined text-[14px]">cake</span> Sweet {{ dish.sweet_level|default:0 }}/5
+                </span>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="px-8 py-10 space-y-10">
-    <!-- Header Block -->
-    <div>
-        <div class="flex items-start justify-between mb-2">
-            <h1 class="text-4xl font-extrabold text-slate-900 leading-tight">{{ dish.name }}</h1>
-            <span class="bg-slate-900 text-white font-extrabold text-xl px-4 py-2 rounded-2xl shadow-md">₹{% widthratio dish.price|default:0 100 1 %}</span>
+<div class="px-6 md:px-10 py-10 space-y-12">
+    
+    <!-- Allergy Safety Card -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-xl">health_and_safety</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900">Allergy Safety Profile</h2>
         </div>
         
-        <!-- Restaurant Identity -->
-        <div class="bg-slate-50 border border-slate-200 rounded-3xl p-5 mt-6 flex items-center gap-4">
-            <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
-                <span class="material-symbols-outlined text-3xl">storefront</span>
+        <div class="grid md:grid-cols-2 gap-4">
+            <!-- Contains -->
+            <div class="bg-red-50 border border-red-200 rounded-3xl p-6 shadow-sm">
+                <h3 class="text-sm font-bold text-red-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">warning</span> Contains
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for allergen in dish.ingredients_to_avoid %}
+                        <span class="bg-red-200 text-red-900 px-4 py-2 rounded-xl text-sm font-bold shadow-sm">{{ allergen }}</span>
+                    {% empty %}
+                        <span class="text-red-700/60 text-sm font-medium italic">No major allergens reported.</span>
+                    {% endfor %}
+                </div>
             </div>
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Prepared By</p>
-                <h3 class="text-lg font-bold text-slate-900">{{ dish.restaurant.name }}</h3>
-                <p class="text-sm font-medium text-slate-500 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">location_on</span> {{ dish.restaurant.address|default:"Location" }}
-                </p>
-            </div>
-        </div>
-    </div>
 
-    <!-- Info Boxes -->
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-orange-50 rounded-3xl p-5 border border-orange-100 flex items-start gap-3">
-            <span class="material-symbols-outlined text-orange-500 text-3xl">local_fire_department</span>
-            <div>
-                <p class="text-xs font-bold text-orange-800/60 uppercase tracking-widest mb-1">Spice Level</p>
-                <p class="text-lg font-extrabold text-orange-900">Level {{ dish.spice_level|default:0 }}</p>
+            <!-- Avoids (Safe) -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 shadow-sm">
+                <h3 class="text-sm font-bold text-emerald-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span> Safe From (Avoids)
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for allergen in all_allergens %}
+                        {% if allergen not in dish.ingredients_to_avoid %}
+                            <span class="bg-emerald-200 text-emerald-900 px-4 py-2 rounded-xl text-sm font-bold shadow-sm">{{ allergen }}</span>
+                        {% endif %}
+                    {% empty %}
+                        <span class="text-emerald-700/60 text-sm font-medium italic">None</span>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-        <div class="bg-pink-50 rounded-3xl p-5 border border-pink-100 flex items-start gap-3">
-            <span class="material-symbols-outlined text-pink-500 text-3xl">cake</span>
-            <div>
-                <p class="text-xs font-bold text-pink-800/60 uppercase tracking-widest mb-1">Sweetness</p>
-                <p class="text-lg font-extrabold text-pink-900">Level {{ dish.sweet_level|default:0 }}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Allergen Box -->
-    <div class="bg-red-50 border border-red-200 rounded-3xl p-6 shadow-sm">
-        <div class="flex items-center gap-3 mb-3">
-            <span class="material-symbols-outlined text-red-500 text-2xl">warning</span>
-            <h3 class="text-lg font-bold text-red-900">Allergen Transparency</h3>
-        </div>
-        <p class="text-sm font-medium text-red-800 leading-relaxed">
-            {% if dish.ingredients_to_avoid %}
-                This dish contains: <strong class="bg-red-200 px-2 py-0.5 rounded-md text-red-900">{{ dish.ingredients_to_avoid|join:", " }}</strong>. 
-            {% else %}
-                <strong class="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">No major allergens reported.</strong> 
-            {% endif %}
-            Please verify with the restaurant directly if you have severe life-threatening allergies.
-        </p>
-    </div>
+    </section>
 
     <!-- Ingredients -->
-    <div class="border border-slate-200 rounded-3xl p-6 bg-white shadow-sm">
-        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2 mb-2">
-            <span class="material-symbols-outlined">receipt_long</span> Complete Ingredients
-        </h3>
-        <p class="text-sm font-medium text-slate-500 mb-6">Every component used in prep, marination, and finishing.</p>
-        
-        <div class="flex flex-col gap-3">
-            {% for ingredient in dish.ingredients %}
-            <div class="bg-slate-50 text-slate-800 text-base font-bold px-4 py-3 rounded-xl border border-slate-100 flex items-center gap-3 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-primary"></span> {{ ingredient }}
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700">
+                <span class="material-symbols-outlined text-xl">receipt_long</span>
             </div>
-            {% empty %}
-            <div class="bg-slate-50 text-slate-500 text-sm font-medium px-4 py-4 rounded-xl border border-slate-100 italic text-center">
-                Detailed ingredient list is pending kitchen verification.
-            </div>
-            {% endfor %}
+            <h2 class="text-2xl font-extrabold text-slate-900">Ingredient Breakdown</h2>
         </div>
-    </div>
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div class="flex flex-wrap gap-2">
+                {% for ingredient in dish.ingredients %}
+                    <span class="bg-slate-100 text-slate-800 px-4 py-2 rounded-full text-sm font-bold border border-slate-200 hover:border-slate-300 transition-colors shadow-sm cursor-default">
+                        {{ ingredient }}
+                    </span>
+                {% empty %}
+                    <p class="text-slate-500 italic">Ingredient list is pending kitchen verification.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Nutrition Cards -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
+                <span class="material-symbols-outlined text-xl">monitor_weight</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900">Nutrition Facts</h2>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Calories -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-5 shadow-lg border border-slate-700 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform duration-500">
+                    <span class="material-symbols-outlined text-5xl text-white">bolt</span>
+                </div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 relative z-10">Calories</p>
+                <p class="text-3xl font-extrabold text-white relative z-10">{{ dish.calories|default:"-" }} <span class="text-lg text-slate-400 font-bold">kcal</span></p>
+            </div>
+            <!-- Protein -->
+            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl p-5 shadow-sm border border-emerald-200 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform duration-500">
+                    <span class="material-symbols-outlined text-5xl text-emerald-600">fitness_center</span>
+                </div>
+                <p class="text-xs font-bold text-emerald-800 uppercase tracking-widest mb-1 relative z-10">Protein</p>
+                <p class="text-3xl font-extrabold text-emerald-900 relative z-10">{{ dish.protein|default:"-" }}<span class="text-lg text-emerald-700/70 font-bold">g</span></p>
+            </div>
+            <!-- Carbs -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-5 shadow-sm border border-blue-200 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform duration-500">
+                    <span class="material-symbols-outlined text-5xl text-blue-600">grain</span>
+                </div>
+                <p class="text-xs font-bold text-blue-800 uppercase tracking-widest mb-1 relative z-10">Carbs</p>
+                <p class="text-3xl font-extrabold text-blue-900 relative z-10">{{ dish.carbs|default:"-" }}<span class="text-lg text-blue-700/70 font-bold">g</span></p>
+            </div>
+            <!-- Fat -->
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl p-5 shadow-sm border border-amber-200 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform duration-500">
+                    <span class="material-symbols-outlined text-5xl text-amber-600">water_drop</span>
+                </div>
+                <p class="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1 relative z-10">Total Fat</p>
+                <p class="text-3xl font-extrabold text-amber-900 relative z-10">{{ dish.fat|default:"-" }}<span class="text-lg text-amber-700/70 font-bold">g</span></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="pt-8 border-t border-slate-200">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                    <span class="material-symbols-outlined text-xl">star</span>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900">Community Reviews</h2>
+            </div>
+            <div class="text-right">
+                {% if dish.rating_summary.count > 0 %}
+                <div class="flex items-center gap-1 justify-end">
+                    <span class="material-symbols-outlined text-yellow-500 text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-3xl font-extrabold text-slate-900">{{ dish.rating_summary.average }}</span>
+                </div>
+                <p class="text-sm font-bold text-slate-500">Based on {{ dish.rating_summary.count }} reviews</p>
+                {% else %}
+                <div class="flex items-center gap-1 justify-end">
+                    <span class="text-xl font-extrabold text-slate-900 mt-2">No reviews yet</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Write a Review Form -->
+        <div class="bg-slate-50 rounded-3xl p-6 border border-slate-200 mb-8 shadow-inner">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">Write a Review</h3>
+            <form hx-post="/api/v1/dishes/{{ dish.id }}/reviews/htmx" hx-target="#reviews-list" hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Rating (1-5)</label>
+                    <div class="flex items-center gap-2">
+                        <select name="rating" required class="bg-white border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-primary focus:border-primary block w-32 p-2.5 shadow-sm font-bold">
+                            <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                            <option value="4">⭐⭐⭐⭐ 4</option>
+                            <option value="3">⭐⭐⭐ 3</option>
+                            <option value="2">⭐⭐ 2</option>
+                            <option value="1">⭐ 1</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Your Comment</label>
+                    <textarea name="comment" rows="3" required maxlength="500" class="block p-3 w-full text-sm text-slate-900 bg-white rounded-xl border border-slate-300 focus:ring-primary focus:border-primary shadow-sm" placeholder="How did this dish fit your dietary needs?"></textarea>
+                </div>
+                <button type="submit" class="bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-primary-dark transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined">send</span> Post Review
+                </button>
+            </form>
+        </div>
+
+        <!-- List of Reviews -->
+        <div id="reviews-list" class="space-y-4" hx-get="/api/v1/dishes/{{ dish.id }}/reviews/htmx" hx-trigger="load">
+            <div class="text-center py-8 text-slate-400">
+                <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+                <p class="font-bold mt-2">Loading reviews...</p>
+            </div>
+        </div>
+    </section>
 
 </div>
 
 <!-- Sticky Bottom Nav CTA -->
 <aside class="fixed bottom-0 left-0 right-0 max-w-4xl mx-auto z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 sm:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
     <div class="flex items-center gap-4">
-        <button hx-post="/api/v1/me/favourites" hx-vals='{"dish_id": {{ dish_id|default:"101" }}}' hx-swap="none" 
+        <button hx-post="/api/v1/me/favourites" hx-vals='{"dish_id": {{ dish.id|default:"101" }}}' hx-swap="none" 
                 x-data="{ isFaved: false }" @click="isFaved = !isFaved" 
                 :class="isFaved ? 'bg-red-50 text-red-600 border-red-200 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
                 class="p-4 rounded-2xl border flex items-center justify-center transition-all shadow-sm shrink-0 w-16 h-16">
             <span class="material-symbols-outlined text-3xl" :style="isFaved ? 'font-variation-settings: \'FILL\' 1;' : ''" x-text="isFaved ? 'favorite' : 'favorite_border'">favorite_border</span>
         </button>
         
-        <button onclick="alert('Order integration coming soon!')" class="flex-1 bg-primary text-white p-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary-dark hover:shadow-xl transition-all flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined">shopping_bag</span> Order Now
+        <button onclick="alert('Order integration coming soon!')" class="flex-1 bg-primary text-white p-4 rounded-xl font-medium text-lg shadow-lg hover:bg-primary-dark hover:shadow-xl transition-all flex items-center justify-center gap-2 min-h-[44px]">
+            <span class="material-symbols-outlined">add_shopping_cart</span> Add to Meal Plan
         </button>
     </div>
 </aside>

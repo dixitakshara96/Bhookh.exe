@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>NIVAALA - Ingredient-Level Food Discovery</title>
+    <title>NIVAALA - Eat with confidence</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -15,170 +15,219 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                    colors: { 
+                        primary: "#16A34A", 
+                        "primary-dark": "#15803D", 
+                        accent: "#F59E0B",
+                        "accent-dark": "#D97706",
+                        surface: "#F8FAF8", 
+                        "surface-dark": "#e2e8f0" 
+                    },
+                    borderRadius: {
+                        'xl': '24px',
+                        '2xl': '24px',
+                        '3xl': '24px',
+                        '4xl': '24px'
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(22, 163, 74, 0.04)',
+                        'md': '0 4px 16px rgba(22, 163, 74, 0.08)',
+                        'lg': '0 10px 24px rgba(22, 163, 74, 0.12)',
+                        'xl': '0 20px 40px rgba(22, 163, 74, 0.16)',
+                        '2xl': '0 25px 50px rgba(22, 163, 74, 0.20)',
+                    }
                 }
             }
         }
     </script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.4); }
         .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .range-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 99px; outline: none; }
+        .range-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #059669; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .range-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
     </style>
 </head>
-<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col" x-data="{ query: '', spice: 0, sweet: 0, priceMax: 200000, diet: [], exclude: [], newExclude: '' }">
+<body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-primary selection:text-white" 
+      x-data="{ 
+          exclude: [{% if prefs %}{% for a in prefs.allergies %}'{{ a }}'{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}],
+          spice: {{ prefs.default_spice|default:0 }}, 
+          sweet: {{ prefs.default_sweetness|default:0 }}, 
+          priceMax: 80000, 
+          diet: [],
+          highProtein: false,
+          lowCalorie: false,
+          vegetarian: false,
+          vegan: false
+      }">
     
     <!-- Navbar -->
-    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 h-[72px] flex items-center justify-between shadow-sm">
         <a href="/" class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
-            <span class="text-2xl font-extrabold tracking-tight text-slate-900">NIVAALA</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 mt-1">NIVAALA</span>
         </a>
-        <div class="hidden md:flex items-center gap-8">
-            <a href="/" class="text-primary font-bold transition">Home</a>
-            <a href="/favourites" class="text-slate-500 hover:text-primary font-medium transition">Favourites</a>
-            <a href="/profile" class="text-slate-500 hover:text-primary font-medium transition">Profile</a>
-        </div>
-        <div class="flex items-center gap-4">
-            {% if request.user.is_authenticated %}
-            <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition border border-slate-200">
-                    <span class="material-symbols-outlined text-slate-400">person</span>
-                    <span class="font-semibold text-sm">{{ request.user.name }}</span>
-                </button>
-                <div x-show="open" @click.away="open = false" style="display: none;" class="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
-                    <a href="/profile" class="block px-4 py-3 text-sm font-medium hover:bg-slate-50 transition">My Profile</a>
-                    <button hx-delete="/api/v1/auth/logout" class="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-slate-100">Logout</button>
-                </div>
-            </div>
-            {% else %}
-            <a href="/login" class="bg-primary text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-primary-dark transition-colors">Sign In</a>
-            {% endif %}
+        <div class="flex items-center gap-6 hidden md:flex">
+            <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
+            <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
+            <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+    <!-- Hero Section -->
+    <header class="relative overflow-hidden bg-slate-900 text-white py-24 lg:py-32">
+        <div class="absolute inset-0 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover opacity-20" alt="Beautiful fresh food">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
+        </div>
         
-        <!-- Filters Sidebar -->
-        <aside class="lg:col-span-3 space-y-8">
-            <div>
-                <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Discover Safe Food.</h2>
-                <p class="text-slate-500 font-medium text-sm">Tailor your culinary journey precisely to your body's needs.</p>
+        <div class="relative max-w-5xl mx-auto px-6 text-center animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/20 border border-brand-500/30 text-brand-100 font-semibold text-sm mb-6 backdrop-blur-md">
+                <span class="material-symbols-outlined text-[18px]">verified_user</span> Ingredient-Level Transparency
             </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                Eat with confidence,<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-emerald-200">not guesswork.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                Discover dishes using ingredients, allergies, spice, sweetness, nutrition and budget.
+            </p>
+            <button @click="document.getElementById('search-filters').scrollIntoView({behavior: 'smooth'})" class="bg-primary text-white px-8 py-4 rounded-xl font-medium text-lg shadow-[0_0_40px_rgba(22,163,74,0.4)] hover:shadow-[0_0_60px_rgba(22,163,74,0.6)] hover:bg-primary-dark transition-all transform hover:-translate-y-1 flex items-center gap-2 mx-auto min-h-[44px]">
+                Find Safe Dishes <span class="material-symbols-outlined">expand_more</span>
+            </button>
+        </div>
+    </header>
 
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
-                <!-- Dietary -->
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dietary Baselines</h3>
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="d in ['vegetarian', 'vegan', 'jain', 'dairy-free', 'gluten-free']">
-                            <button @click="diet.includes(d) ? diet = diet.filter(i => i !== d) : diet.push(d)" 
-                                    :class="diet.includes(d) ? 'bg-primary text-white border-primary shadow-md transform scale-105' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'"
-                                    class="px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200">
-                                <span x-text="d.charAt(0).toUpperCase() + d.slice(1)"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
+    <!-- Main Container -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-12" id="search-filters">
+        
+        <!-- Form wrapper that redirects to search page -->
+        <form action="/search-results" method="GET" class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 -mt-24 relative z-10 mb-16">
+            
+            <!-- Hidden inputs synced with Alpine state -->
+            <input type="hidden" name="exclude" :value="exclude.join(',')">
+            <input type="hidden" name="diet" :value="[vegetarian ? 'vegetarian' : '', vegan ? 'vegan' : ''].filter(Boolean).join(',')">
+            <input type="hidden" name="spice" :value="spice">
+            <input type="hidden" name="sweet" :value="sweet">
+            <input type="hidden" name="price_max" :value="priceMax">
+            <input type="hidden" name="high_protein" :value="highProtein">
+            <input type="hidden" name="low_calorie" :value="lowCalorie">
 
-                <!-- Spice -->
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Spice Tolerance</h3>
-                    <div class="grid grid-cols-5 gap-2">
-                        <template x-for="level in [0,1,2,3,4]">
-                            <button @click="spice = level" 
-                                    :class="spice === level ? 'bg-orange-500 text-white shadow-lg scale-110' : 'bg-surface-dark text-slate-600 hover:bg-slate-200'"
-                                    class="flex flex-col items-center p-2 rounded-xl transition-all duration-200">
-                                <span class="material-symbols-outlined text-sm mb-1" :class="spice === level ? 'text-white' : 'text-orange-400'">local_fire_department</span>
-                                <span class="text-[10px] font-bold" x-text="level"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Exclude -->
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Strict Exclusions</h3>
-                    <div class="flex items-center gap-2">
-                        <input x-model="newExclude" @keydown.enter="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="flex-1 px-4 py-2.5 rounded-xl bg-surface-dark border-none text-sm focus:ring-2 focus:ring-red-500 transition" placeholder="e.g. Peanuts">
-                        <button @click="if(newExclude.trim() !== '' && !exclude.includes(newExclude.trim())) { exclude.push(newExclude.trim()); newExclude = ''; }" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-700 transition">Add</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 mt-3">
-                        <template x-for="ex in exclude" :key="ex">
-                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 text-xs font-bold">
-                                <span x-text="ex"></span>
-                                <button @click="exclude = exclude.filter(i => i !== ex)" class="hover:text-red-900 ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
-                            </span>
-                        </template>
-                    </div>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 
-                <button @click="window.location.href = `/search-results?q=${query}&spice=${spice}&sweet=${sweet}&price_max=${priceMax}&diet=${diet.join(',')}&exclude=${exclude.join(',')}`" class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:bg-primary-dark transition-all transform hover:-translate-y-1">
-                    <span class="material-symbols-outlined">search</span> Search Dishes
-                </button>
-            </div>
-        </aside>
+                <!-- 1. Allergy Shield -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-red-500">health_and_safety</span>
+                        <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-800">Allergy Shield (Strict)</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="allergen in ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']">
+                            <button type="button" @click="exclude.includes(allergen) ? exclude = exclude.filter(a => a !== allergen) : exclude.push(allergen)"
+                                    :class="exclude.includes(allergen) ? 'bg-red-500 text-white border-red-500 shadow-md transform scale-105' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'"
+                                    class="px-4 py-2 rounded-xl text-sm font-bold border transition-all duration-200 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]" x-show="exclude.includes(allergen)">block</span>
+                                <span x-text="allergen"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
 
-        <!-- Content Area -->
-        <section class="lg:col-span-9">
+                <!-- 2. Taste -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-orange-500">local_fire_department</span>
+                        <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-800">Taste Profile</h3>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                                <span>Mild</span>
+                                <span>Spice Level: <span x-text="spice" class="text-orange-600 text-sm"></span></span>
+                                <span>Extreme</span>
+                            </div>
+                            <input type="range" x-model="spice" min="0" max="5" step="1" class="range-slider">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                                <span>Savory</span>
+                                <span>Sweetness: <span x-text="sweet" class="text-pink-600 text-sm"></span></span>
+                                <span>Dessert</span>
+                            </div>
+                            <input type="range" x-model="sweet" min="0" max="5" step="1" class="range-slider" style="background: linear-gradient(90deg, #e2e8f0 0%, #fbcfe8 100%);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Nutrition Toggles -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-emerald-500">energy_program_time_used</span>
+                        <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-800">Nutrition & Diet</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" @click="highProtein = !highProtein" :class="highProtein ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-surface-dark border-transparent text-slate-600'" class="px-4 py-3 rounded-xl text-sm font-bold border transition-all duration-200 text-left flex justify-between items-center">
+                            High Protein <span class="material-symbols-outlined text-[18px]" x-show="highProtein">check_circle</span>
+                        </button>
+                        <button type="button" @click="lowCalorie = !lowCalorie" :class="lowCalorie ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-surface-dark border-transparent text-slate-600'" class="px-4 py-3 rounded-xl text-sm font-bold border transition-all duration-200 text-left flex justify-between items-center">
+                            Low Calorie <span class="material-symbols-outlined text-[18px]" x-show="lowCalorie">check_circle</span>
+                        </button>
+                        <button type="button" @click="vegetarian = !vegetarian; if(vegetarian) vegan = false;" :class="vegetarian ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-surface-dark border-transparent text-slate-600'" class="px-4 py-3 rounded-xl text-sm font-bold border transition-all duration-200 text-left flex justify-between items-center">
+                            Vegetarian <span class="material-symbols-outlined text-[18px]" x-show="vegetarian">check_circle</span>
+                        </button>
+                        <button type="button" @click="vegan = !vegan; if(vegan) vegetarian = false;" :class="vegan ? 'bg-emerald-100 border-emerald-500 text-emerald-800' : 'bg-surface-dark border-transparent text-slate-600'" class="px-4 py-3 rounded-xl text-sm font-bold border transition-all duration-200 text-left flex justify-between items-center">
+                            Vegan <span class="material-symbols-outlined text-[18px]" x-show="vegan">check_circle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Budget & Search -->
+                <div class="lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-blue-500">payments</span>
+                            <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-800">Max Budget</h3>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-slate-500 mb-2">
+                            <span>₹100</span>
+                            <span class="text-blue-600 text-lg">₹<span x-text="priceMax / 100"></span></span>
+                            <span>₹800</span>
+                        </div>
+                        <input type="range" x-model="priceMax" min="10000" max="80000" step="5000" class="range-slider">
+                    </div>
+                    
+                    <button type="submit" class="mt-6 w-full bg-primary hover:bg-primary-dark text-white rounded-xl min-h-[44px] px-4 font-medium text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        <span class="material-symbols-outlined">search</span> Search Full Menu
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <!-- Dynamic Results Section -->
+        <div>
             <div class="flex items-end justify-between mb-8">
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900">Trending Near You</h2>
-                    <p class="text-slate-500 font-medium mt-1">Highly rated, transparent dishes in your area.</p>
+                    <h2 class="text-3xl font-extrabold text-slate-900">Trending & Safe</h2>
+                    <p class="text-slate-500 font-medium mt-1">Dishes that match your profile.</p>
                 </div>
-                <a href="/search-results" class="text-primary font-bold hover:underline flex items-center gap-1">View all <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {% for dish in trending_dishes %}
-                <a href="/dishes/{{ dish.id }}" class="group block bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden transform hover:-translate-y-2">
-                    <div class="h-48 w-full relative overflow-hidden bg-slate-100">
-                        {% if dish.image_url %}
-                        <img loading="lazy" src="{{ dish.image_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="{{ dish.name }}">
-                        {% else %}
-                        <img loading="lazy" src="https://placehold.co/600x400/e2e8f0/475569?text={{ dish.name|urlencode }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="{{ dish.name }}">
-                        {% endif %}
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-sm">
-                            <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
-                            <span class="text-xs font-bold text-slate-800">4.5</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-1 leading-tight group-hover:text-primary transition-colors">{{ dish.name }}</h3>
-                        <p class="text-sm font-semibold text-slate-500 flex items-center gap-1 mb-4">
-                            <span class="material-symbols-outlined text-[16px]">storefront</span> {{ dish.restaurant.name }}
-                        </p>
-                        
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            {% for tag in dish.dietary_tags|slice:":3" %}
-                            <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">{{ tag }}</span>
-                            {% endfor %}
-                            <span class="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-wider">
-                                <span class="material-symbols-outlined text-[12px]">local_fire_department</span> Lvl {{ dish.spice_level }}
-                            </span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                            <span class="text-lg font-extrabold text-slate-900">₹{% widthratio dish.price 100 1 %}</span>
-                            <span class="text-xs font-bold text-primary flex items-center gap-1">Details <span class="material-symbols-outlined text-sm">arrow_right_alt</span></span>
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
+            <!-- This is the container HTMX will target and swap content into -->
+            <div id="dish-results" aria-live="polite">
+                {% include 'partials/dish_list.html' with dishes=trending_dishes %}
             </div>
-        </section>
+        </div>
     </main>
 
     <!-- Mobile Bottom Nav -->
-    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200">
+    <aside class="md:hidden glass fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 pb-safe">
         <div class="flex justify-around px-4 py-3">
             <a href="/" class="flex flex-col items-center text-primary">
                 <span class="material-symbols-outlined text-2xl">home</span>
                 <span class="text-[10px] font-bold">Home</span>
-            </a>
-            <a href="/search-results" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-2xl">search</span>
-                <span class="text-[10px] font-bold">Search</span>
             </a>
             <a href="/favourites" class="flex flex-col items-center text-slate-400 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-2xl">favorite</span>
@@ -190,5 +239,9 @@
             </a>
         </div>
     </aside>
+
+    <footer class="hidden md:block py-8 text-center text-slate-500 text-sm mt-auto border-t border-slate-200 bg-white/50">
+        © 2026 NIVAALA. Eat with confidence.
+    </footer>
 </body>
 </html>

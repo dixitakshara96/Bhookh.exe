@@ -15,7 +15,27 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                    colors: { 
+                        primary: "#16A34A", 
+                        "primary-dark": "#15803D", 
+                        accent: "#F59E0B",
+                        "accent-dark": "#D97706",
+                        surface: "#F8FAF8", 
+                        "surface-dark": "#e2e8f0" 
+                    },
+                    borderRadius: {
+                        'xl': '24px',
+                        '2xl': '24px',
+                        '3xl': '24px',
+                        '4xl': '24px'
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(22, 163, 74, 0.04)',
+                        'md': '0 4px 16px rgba(22, 163, 74, 0.08)',
+                        'lg': '0 10px 24px rgba(22, 163, 74, 0.12)',
+                        'xl': '0 20px 40px rgba(22, 163, 74, 0.16)',
+                        '2xl': '0 25px 50px rgba(22, 163, 74, 0.20)',
+                    }
                 }
             }
         }
@@ -28,20 +48,20 @@
 <body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
     
     <!-- Navbar -->
-    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 h-[72px] flex items-center justify-between shadow-sm">
         <a href="/" class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
-            <span class="text-2xl font-extrabold tracking-tight text-slate-900 hidden sm:block">NIVAALA</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 mt-1">NIVAALA</span>
         </a>
-        <div class="hidden md:flex items-center gap-8">
-            <a href="/" class="text-slate-500 hover:text-primary font-medium transition">Home</a>
-            <a href="/favourites" class="text-slate-500 hover:text-primary font-medium transition">Favourites</a>
-            <a href="/profile" class="text-primary font-bold transition">Profile</a>
-        </div>
-        <div class="flex items-center gap-4">
-            <button hx-delete="/api/v1/auth/logout" class="bg-red-50 text-red-600 px-6 py-2 rounded-full font-bold shadow-sm hover:bg-red-100 transition-colors">Sign Out</button>
+        <div class="flex items-center gap-6 hidden md:flex">
+            <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
+            <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
+            <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
         </div>
     </nav>
+
 
     <!-- Main Container -->
     <main class="flex-1 w-full max-w-4xl mx-auto px-6 py-10">
@@ -55,10 +75,10 @@
                 <h1 class="text-3xl font-extrabold text-slate-900 mb-1">{{ request.user.name }}</h1>
                 <p class="text-slate-500 font-medium mb-4">{{ request.user.email }}</p>
                 <div class="flex flex-wrap justify-center md:justify-start gap-2">
-                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1">
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-100 flex items-center gap-1">
                         <span class="material-symbols-outlined text-[14px]">verified</span> Verified Diner
                     </span>
-                    <span class="bg-slate-50 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200">
+                    <span class="bg-surface text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200">
                         Joined {{ request.user.created_at|date:"M Y"|default:"Recently" }}
                     </span>
                 </div>
@@ -74,11 +94,11 @@
                 <div class="space-y-4">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
-                        <p class="text-sm font-semibold text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100">{{ request.user.name }}</p>
+                        <p class="text-sm font-semibold text-slate-800 bg-surface p-3 rounded-xl border border-slate-100">{{ request.user.name }}</p>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
-                        <p class="text-sm font-semibold text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100">{{ request.user.email }}</p>
+                        <p class="text-sm font-semibold text-slate-800 bg-surface p-3 rounded-xl border border-slate-100">{{ request.user.email }}</p>
                     </div>
                 </div>
                 <button onclick="alert('Profile editing coming soon!')" class="w-full mt-6 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-xl font-bold transition-colors">
@@ -87,24 +107,70 @@
             </div>
 
             <!-- Dietary Snapshot -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200" x-data="{ 
+                allergies: [{% if prefs %}{% for a in prefs.allergies %}'{{ a }}'{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}],
+                spice: {{ prefs.default_spice|default:0 }},
+                sweet: {{ prefs.default_sweetness|default:0 }}
+            }">
                 <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">health_and_safety</span> Safety Preferences
                 </h3>
-                <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-4 flex items-start gap-3">
-                    <span class="material-symbols-outlined text-orange-500">local_fire_department</span>
-                    <div>
-                        <p class="text-sm font-bold text-orange-900">Spice Tolerance</p>
-                        <p class="text-xs text-orange-800/80">You can update your preferred spice ceiling directly on the discovery page.</p>
+                <form hx-post="/api/v1/me/preferences/htmx" hx-target="#prefs-message" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="allergies" :value="allergies.join(',')">
+                    
+                    <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <span class="material-symbols-outlined text-red-500 mt-1">warning</span>
+                            <div>
+                                <p class="text-sm font-bold text-red-900">Active Allergies</p>
+                                <p class="text-xs text-red-800/80">Manage your strict exclusions (e.g. Peanuts, Seafood) globally.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="allergen in ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']">
+                                <button type="button" @click="allergies.includes(allergen) ? allergies = allergies.filter(a => a !== allergen) : allergies.push(allergen)"
+                                        :class="allergies.includes(allergen) ? 'bg-red-500 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                                        class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]" x-show="allergies.includes(allergen)">block</span>
+                                    <span x-text="allergen"></span>
+                                </button>
+                            </template>
+                        </div>
                     </div>
-                </div>
-                <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3">
-                    <span class="material-symbols-outlined text-red-500">warning</span>
-                    <div>
-                        <p class="text-sm font-bold text-red-900">Active Allergies</p>
-                        <p class="text-xs text-red-800/80">Manage your strict exclusions (e.g. Peanuts, Shellfish) dynamically while searching.</p>
+
+                    <div class="bg-orange-50 border border-orange-100 rounded-xl p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <span class="material-symbols-outlined text-orange-500 mt-1">local_fire_department</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-sm font-bold text-orange-900">Spice Tolerance</p>
+                                    <span class="text-xs font-bold text-orange-700" x-text="spice"></span>
+                                </div>
+                                <input type="range" name="default_spice" x-model="spice" min="0" max="5" step="1" class="w-full h-1.5 bg-orange-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="bg-pink-50 border border-pink-100 rounded-xl p-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <span class="material-symbols-outlined text-pink-500 mt-1">cake</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-sm font-bold text-pink-900">Sweetness</p>
+                                    <span class="text-xs font-bold text-pink-700" x-text="sweet"></span>
+                                </div>
+                                <input type="range" name="default_sweetness" x-model="sweet" min="0" max="5" step="1" class="w-full h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="prefs-message"></div>
+
+                    <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 min-h-[44px] rounded-xl font-medium transition-colors flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">save</span> Save Preferences
+                    </button>
+                </form>
             </div>
         </div>
         {% else %}
@@ -147,5 +213,9 @@
             if(evt.detail.xhr.status === 401) window.location.href = '/login';
         });
     </script>
+
+    <footer class="hidden md:block py-8 text-center text-slate-500 text-sm mt-auto border-t border-slate-200 bg-white/50">
+        © 2026 NIVAALA. Eat with confidence.
+    </footer>
 </body>
 </html>

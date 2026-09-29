@@ -3,9 +3,12 @@ from .decorators import optional_auth
 
 @optional_auth
 def index_page(request):
-    from .models import Dish
+    from .models import Dish, UserPreference
     trending_dishes = Dish.objects.select_related('restaurant').all()[:6]
-    return render(request, 'index.html', {'trending_dishes': trending_dishes})
+    prefs = None
+    if request.user and request.user.is_authenticated:
+        prefs, _ = UserPreference.objects.get_or_create(user=request.user)
+    return render(request, 'index.html', {'trending_dishes': trending_dishes, 'prefs': prefs})
 
 @optional_auth
 def login_page(request):
@@ -31,4 +34,8 @@ def dish_reviews_page(request, dish_id):
 
 @optional_auth
 def profile_page(request):
-    return render(request, 'profile.html')
+    from .models import UserPreference
+    prefs = None
+    if request.user and request.user.is_authenticated:
+        prefs, _ = UserPreference.objects.get_or_create(user=request.user)
+    return render(request, 'profile.html', {'prefs': prefs})

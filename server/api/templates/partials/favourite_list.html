@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="pr-2">
-            <button hx-delete="/api/v1/me/favourites" hx-vals='{"dish_id": {{ item.dish.id }}}' hx-target="closest a" hx-swap="outerHTML" class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm" title="Remove from Favourites" @click.prevent>
+            <button hx-delete="/api/v1/me/favourites/{{ item.dish.id }}" hx-target="closest a" hx-swap="outerHTML" class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm" title="Remove from Favourites" @click.prevent>
                 <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
             </button>
         </div>

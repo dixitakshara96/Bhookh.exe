@@ -25,6 +25,9 @@ urlpatterns = [
     path('me/favourites/htmx', views.user_favourites, name='user_favourites_htmx'),
     path('me/favourites/<int:dish_id>', views.remove_favourite, name='remove_favourite'),
     
+    # Preferences
+    path('me/preferences/htmx', views.update_preferences, name='update_preferences_htmx'),
+    
     # 5. Metadata
     path('categories', views.get_categories, name='get_categories'),
 ]

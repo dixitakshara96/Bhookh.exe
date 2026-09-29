@@ -15,7 +15,27 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: "#059669", "primary-dark": "#047857", surface: "#f8fafc", "surface-dark": "#f1f5f9" }
+                    colors: { 
+                        primary: "#16A34A", 
+                        "primary-dark": "#15803D", 
+                        accent: "#F59E0B",
+                        "accent-dark": "#D97706",
+                        surface: "#F8FAF8", 
+                        "surface-dark": "#e2e8f0" 
+                    },
+                    borderRadius: {
+                        'xl': '24px',
+                        '2xl': '24px',
+                        '3xl': '24px',
+                        '4xl': '24px'
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(22, 163, 74, 0.04)',
+                        'md': '0 4px 16px rgba(22, 163, 74, 0.08)',
+                        'lg': '0 10px 24px rgba(22, 163, 74, 0.12)',
+                        'xl': '0 20px 40px rgba(22, 163, 74, 0.16)',
+                        '2xl': '0 25px 50px rgba(22, 163, 74, 0.20)',
+                    }
                 }
             }
         }
@@ -31,23 +51,20 @@
 <body class="bg-surface text-slate-800 font-sans antialiased min-h-screen flex flex-col">
     
     <!-- Navbar -->
-    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
+        <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 h-[72px] flex items-center justify-between shadow-sm">
         <a href="/" class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-3xl">restaurant_menu</span>
-            <span class="text-2xl font-extrabold tracking-tight text-slate-900 hidden sm:block">NIVAALA</span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-900 mt-1">NIVAALA</span>
         </a>
-        <div class="hidden md:flex items-center gap-8">
-            <a href="/" class="text-slate-500 hover:text-primary font-medium transition">Home</a>
-            <a href="/favourites" class="text-primary font-bold transition">Favourites</a>
-            <a href="/profile" class="text-slate-500 hover:text-primary font-medium transition">Profile</a>
-        </div>
-        <div class="flex items-center gap-4">
-            <a href="/profile" class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md transition border border-slate-200">
-                <span class="material-symbols-outlined text-slate-400">person</span>
-                <span class="font-semibold text-sm">{{ request.user.name|default:"Guest" }}</span>
-            </a>
+        <div class="flex items-center gap-6 hidden md:flex">
+            <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
+            <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
+            <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
         </div>
     </nav>
+
 
     <!-- Main Container -->
     <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
@@ -63,7 +80,7 @@
             <!-- Loading Skeleton -->
             <div class="htmx-indicator grid grid-cols-1 md:grid-cols-2 gap-6 w-full animate-pulse">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex gap-4">
-                    <div class="w-24 h-24 bg-slate-200 rounded-2xl shrink-0"></div>
+                    <div class="w-24 h-24 bg-slate-200 rounded-3xl shrink-0"></div>
                     <div class="flex-1 space-y-3 py-2">
                         <div class="h-5 bg-slate-200 rounded w-3/4"></div>
                         <div class="h-4 bg-slate-200 rounded w-1/2"></div>
@@ -100,5 +117,9 @@
             if(evt.detail.xhr.status === 401) window.location.href = '/login';
         });
     </script>
+
+    <footer class="hidden md:block py-8 text-center text-slate-500 text-sm mt-auto border-t border-slate-200 bg-white/50">
+        © 2026 NIVAALA. Eat with confidence.
+    </footer>
 </body>
 </html>

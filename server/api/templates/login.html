@@ -18,7 +18,34 @@
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script id="tailwind-config">
-        tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-container": "#fea619", "surface-container-low": "#f2f3ff", "on-surface-variant": "#404940", "primary": "#004c22", "surface": "#faf8ff", "error": "#ba1a1a", "background": "#faf8ff", "surface-container-lowest": "#ffffff", "on-surface": "#131b2e", "primary-container": "#166534", "outline-variant": "#bfc9bd", } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { 
+                        primary: "#16A34A", 
+                        "primary-dark": "#15803D", 
+                        accent: "#F59E0B",
+                        "accent-dark": "#D97706",
+                        surface: "#F8FAF8", 
+                        "surface-dark": "#e2e8f0" 
+                    },
+                    borderRadius: {
+                        'xl': '24px',
+                        '2xl': '24px',
+                        '3xl': '24px',
+                        '4xl': '24px'
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(22, 163, 74, 0.04)',
+                        'md': '0 4px 16px rgba(22, 163, 74, 0.08)',
+                        'lg': '0 10px 24px rgba(22, 163, 74, 0.12)',
+                        'xl': '0 20px 40px rgba(22, 163, 74, 0.16)',
+                        '2xl': '0 25px 50px rgba(22, 163, 74, 0.20)',
+                    }
+                }
+            }
+        }
     </script>
     <style>
         .material-symbols-outlined {
@@ -42,7 +69,19 @@
 <body class="bg-background text-on-surface font-sans antialiased min-h-screen flex justify-center">
     <main
         class="w-full max-w-md bg-surface-container-lowest min-h-screen flex flex-col relative border-x border-outline-variant/30"
-        x-data="{ tab: 'signin', errorMessage: '' }">
+        x-data="{ 
+            tab: 'signin', 
+            errorMessage: '', 
+            signinEmail: '', 
+            signinPassword: '', 
+            signinShowPassword: false,
+            signupName: '', 
+            signupEmail: '', 
+            signupPassword: '', 
+            signupShowPassword: false,
+            isValidSignin() { return this.signinEmail.includes('@') && this.signinPassword.length > 0; },
+            isValidSignup() { return this.signupName.length > 0 && this.signupEmail.includes('@') && this.signupPassword.length >= 8; }
+        }">
 
         <header class="px-4 py-4 flex items-center justify-between border-b border-outline-variant/30">
             <a href="/" class="flex items-center gap-2">
@@ -85,12 +124,12 @@
                 <div class="flex bg-surface-container-low rounded-xl p-1 mb-4">
                     <button @click="tab = 'signin'; errorMessage = ''"
                         :class="tab === 'signin' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-white/50'"
-                        class="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
+                        class="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all">
                         <span class="material-symbols-outlined text-[18px]">login</span> Sign In
                     </button>
                     <button @click="tab = 'signup'; errorMessage = ''"
                         :class="tab === 'signup' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:bg-white/50'"
-                        class="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
+                        class="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all">
                         <span class="material-symbols-outlined text-[18px]">person_add</span> Create Account
                     </button>
                 </div>
@@ -112,20 +151,21 @@
                     <div class="mb-4">
                         <label class="text-[11px] font-bold text-on-surface block mb-1">Email Address</label>
                         <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
-                            <input type="email" name="email" required
-                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
+                            <input type="email" name="email" required x-model="signinEmail"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary focus:ring-2 focus:ring-primary rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="text-[11px] font-bold text-on-surface block mb-1">Password</label>
                         <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
-                            <input type="password" name="password" required
-                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
+                            <input :type="signinShowPassword ? 'text' : 'password'" name="password" required x-model="signinPassword"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary focus:ring-2 focus:ring-primary rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                            <button type="button" @click="signinShowPassword = !signinShowPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant focus:outline-none focus:text-primary">
+                                <span class="material-symbols-outlined text-[18px]" x-text="signinShowPassword ? 'visibility_off' : 'visibility'"></span>
+                            </button>
                         </div>
                     </div>
 
@@ -137,8 +177,9 @@
                             only used to retain dietary passports.</p>
                     </div>
 
-                    <button type="submit"
-                        class="w-full bg-primary-container text-white py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-[#022f13] transition-colors relative">
+                    <button type="submit" :disabled="!isValidSignin()"
+                        :class="isValidSignin() ? 'bg-primary text-white hover:bg-primary-dark' : 'bg-surface-dark text-on-surface-variant cursor-not-allowed'"
+                        class="w-full py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 transition-colors relative focus:ring-2 focus:ring-primary">
                         <span class="submit-text">Sign In <span
                                 class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
                         <span
@@ -155,35 +196,36 @@
                     <div class="mb-4">
                         <label class="text-[11px] font-bold text-on-surface block mb-1">Full Name</label>
                         <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">badge</span>
-                            <input type="text" name="name" required
-                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">badge</span>
+                            <input type="text" name="name" required x-model="signupName"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary focus:ring-2 focus:ring-primary rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="text-[11px] font-bold text-on-surface block mb-1">Email Address</label>
                         <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
-                            <input type="email" name="email" required
-                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">mail</span>
+                            <input type="email" name="email" required x-model="signupEmail"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary focus:ring-2 focus:ring-primary rounded-xl pl-10 pr-3 py-3 text-sm font-semibold text-on-surface">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="text-[11px] font-bold text-on-surface block mb-1">Password</label>
                         <div class="relative">
-                            <span
-                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
-                            <input type="password" name="password" required minlength="6"
-                                class="w-full bg-surface-container-low border border-transparent focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">lock</span>
+                            <input :type="signupShowPassword ? 'text' : 'password'" name="password" required minlength="8" x-model="signupPassword"
+                                class="w-full bg-surface-container-low border border-transparent focus:border-primary focus:ring-2 focus:ring-primary rounded-xl pl-10 pr-10 py-3 text-sm font-semibold text-on-surface">
+                            <button type="button" @click="signupShowPassword = !signupShowPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant focus:outline-none focus:text-primary">
+                                <span class="material-symbols-outlined text-[18px]" x-text="signupShowPassword ? 'visibility_off' : 'visibility'"></span>
+                            </button>
                         </div>
                     </div>
 
-                    <button type="submit"
-                        class="w-full bg-primary-container text-white py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-[#022f13] transition-colors relative">
+                    <button type="submit" :disabled="!isValidSignup()"
+                        :class="isValidSignup() ? 'bg-primary text-white hover:bg-primary-dark' : 'bg-surface-dark text-on-surface-variant cursor-not-allowed'"
+                        class="w-full py-3.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 transition-colors relative focus:ring-2 focus:ring-primary">
                         <span class="submit-text">Create Account <span
                                 class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
                         <span

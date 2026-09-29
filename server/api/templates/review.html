@@ -32,7 +32,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
             {% if dish %}
             <div class="flex items-center gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
                 <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden shadow-sm">
-                    <img loading="lazy" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Dish" class="w-full h-full object-cover">
+                    <img loading="lazy" src="{% if dish.image_url %}{{ dish.image_url }}{% else %}https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80{% endif %}" alt="{{ dish.name }}" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <h2 class="font-bold text-text leading-tight">{{ dish.name }}</h2>
@@ -59,7 +59,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
                 <!-- Textarea -->
                 <div>
                     <label class="block text-sm font-bold text-text mb-2 ml-1">Share your experience</label>
-                    <textarea name="comment" rows="5" placeholder="How was the food? Any cross-contamination issues?" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none font-bold shadow-inner"></textarea>
+                    <textarea name="comment" rows="5" maxlength="500" placeholder="How was the food? Any cross-contamination issues?" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none font-bold shadow-inner"></textarea>
                 </div>
 
                 <!-- Safe Tags -->
@@ -78,7 +78,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
                 </div>
 
                 <div class="pt-6">
-                    <button type="submit" class="w-full bg-primary text-white rounded-xl py-4 font-bold shadow-lg hover:bg-emerald-800 transition-colors flex justify-center items-center gap-2">
+                    <button type="submit" :disabled="rating === 0" :class="rating === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-800'" class="w-full bg-primary text-white rounded-xl py-4 font-bold shadow-lg transition-colors flex justify-center items-center gap-2">
                         <span class="submit-text">Submit Review</span>
                         <svg class="htmx-indicator w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </button>
