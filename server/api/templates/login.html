@@ -131,18 +131,12 @@
                     </button>
                 </div>
 
-                <!-- Error Display -->
-                <div x-show="errorMessage" x-transition
-                    class="mx-3 mb-3 bg-red-50 text-red-600 border border-red-200 text-xs font-bold p-3 rounded-xl flex items-start gap-2"
-                    style="display: none;">
-                    <span class="material-symbols-outlined text-[16px]">error</span>
-                    <span x-text="errorMessage"></span>
-                </div>
+                <!-- Error Display Removed per request -->
 
                 <!-- Sign In Form -->
                 <form x-show="tab === 'signin'" hx-post="/api/v1/auth/login" hx-swap="none"
-                    @submit="isSubmitting = true; errorMessage = ''"
-                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; } catch(e) { errorMessage = 'An error occurred.'; } }"
+                    @submit="isSubmitting = true"
+                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; }"
                     class="px-3 pb-4">
                     {% csrf_token %}
 
@@ -187,8 +181,8 @@
 
                 <!-- Create Account Form -->
                 <form x-show="tab === 'signup'" hx-post="/api/v1/auth/register" hx-swap="none"
-                    @submit="isSubmitting = true; errorMessage = ''"
-                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; if(err.error.fields && err.error.fields.email) { errorMessage = err.error.fields.email; } } catch(e) { errorMessage = 'Registration failed.'; } }"
+                    @submit="isSubmitting = true"
+                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; }"
                     class="px-3 pb-4" style="display: none;">
                     {% csrf_token %}
 
