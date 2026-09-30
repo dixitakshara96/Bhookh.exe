@@ -125,7 +125,10 @@
                 <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">person</span> Profile & Safety Preferences
                 </h3>
-                <form hx-post="/api/v1/me/preferences/htmx" hx-target="#prefs-message" class="space-y-6">
+                <form x-data="{ isSubmitting: false }" hx-post="/api/v1/me/preferences/htmx" hx-target="#prefs-message" 
+                      @submit="isSubmitting = true" 
+                      @htmx:after-request="isSubmitting = false" 
+                      class="space-y-6">
                     {% csrf_token %}
                     <input type="hidden" name="allergies" :value="allergies.join(',')">
                     
@@ -182,8 +185,10 @@
                     
                     <div id="prefs-message"></div>
 
-                    <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 min-h-[44px] rounded-xl font-medium transition-colors flex justify-center items-center gap-2">
-                        <span class="material-symbols-outlined text-[20px]">save</span> Save Preferences
+                    <button type="submit" :disabled="isSubmitting" :class="isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-dark'" class="w-full bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined" x-show="!isSubmitting">save</span>
+                        <span class="material-symbols-outlined animate-spin" x-show="isSubmitting" style="display:none;">refresh</span>
+                        <span x-text="isSubmitting ? 'Saving...' : 'Save Profile & Preferences'"></span>
                     </button>
                 </form>
             </div>

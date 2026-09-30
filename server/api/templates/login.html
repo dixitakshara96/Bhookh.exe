@@ -73,8 +73,11 @@
             signupEmail: '', 
             signupPassword: '', 
             signupShowPassword: false,
-            isValidSignin() { return this.signinEmail.includes('@') && this.signinPassword.length > 0; },
-            isValidSignup() { return this.signupName.length > 0 && this.signupEmail.includes('@') && this.signupPassword.length >= 8; }
+            signupPassword: '', 
+            signupShowPassword: false,
+            isSubmitting: false,
+            isValidSignin() { return this.signinEmail.includes('@') && this.signinPassword.length > 0 && !this.isSubmitting; },
+            isValidSignup() { return this.signupName.length > 0 && this.signupEmail.includes('@') && this.signupPassword.length >= 8 && !this.isSubmitting; }
         }">
 
         <header class="px-6 py-5 flex items-center justify-between border-b border-slate-100 bg-white">
@@ -138,7 +141,8 @@
 
                 <!-- Sign In Form -->
                 <form x-show="tab === 'signin'" hx-post="/api/v1/auth/login" hx-swap="none"
-                    @htmx:after-request="if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; } catch(e) { errorMessage = 'An error occurred.'; } }"
+                    @submit="isSubmitting = true; errorMessage = ''"
+                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; } catch(e) { errorMessage = 'An error occurred.'; } }"
                     class="px-3 pb-4">
                     {% csrf_token %}
 
@@ -174,16 +178,17 @@
                     <button type="submit" :disabled="!isValidSignin()"
                         :class="isValidSignin() ? 'bg-primary text-white hover:bg-primary-dark shadow-md hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
                         class="w-full py-4 rounded-xl text-sm font-bold flex justify-center items-center gap-2 transition-all duration-200 relative focus:ring-2 focus:ring-primary">
-                        <span class="submit-text">Sign In <span
-                                class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
-                        <span
-                            class="htmx-indicator material-symbols-outlined animate-spin text-[18px] absolute">refresh</span>
+                        <span x-show="!isSubmitting">Sign In <span class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <span class="material-symbols-outlined animate-spin text-[18px]">refresh</span> Signing in...
+                        </span>
                     </button>
                 </form>
 
                 <!-- Create Account Form -->
                 <form x-show="tab === 'signup'" hx-post="/api/v1/auth/register" hx-swap="none"
-                    @htmx:after-request="if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; if(err.error.fields && err.error.fields.email) { errorMessage = err.error.fields.email; } } catch(e) { errorMessage = 'Registration failed.'; } }"
+                    @submit="isSubmitting = true; errorMessage = ''"
+                    @htmx:after-request="isSubmitting = false; if($event.detail.successful) { window.location.href = '{{ request.GET.next|default:'/' }}'; } else { try { let err = JSON.parse($event.detail.xhr.response); errorMessage = err.error.message; if(err.error.fields && err.error.fields.email) { errorMessage = err.error.fields.email; } } catch(e) { errorMessage = 'Registration failed.'; } }"
                     class="px-3 pb-4" style="display: none;">
                     {% csrf_token %}
 
@@ -220,10 +225,10 @@
                     <button type="submit" :disabled="!isValidSignup()"
                         :class="isValidSignup() ? 'bg-primary text-white hover:bg-primary-dark shadow-md hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
                         class="w-full py-4 rounded-xl text-sm font-bold flex justify-center items-center gap-2 transition-all duration-200 relative focus:ring-2 focus:ring-primary">
-                        <span class="submit-text">Create Account <span
-                                class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
-                        <span
-                            class="htmx-indicator material-symbols-outlined animate-spin text-[18px] absolute">refresh</span>
+                        <span x-show="!isSubmitting">Create Account <span class="material-symbols-outlined text-[18px] align-middle ml-1">arrow_forward</span></span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <span class="material-symbols-outlined animate-spin text-[18px]">refresh</span> Creating account...
+                        </span>
                     </button>
                 </form>
             </div>

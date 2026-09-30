@@ -75,6 +75,7 @@
 
     <!-- Main Container -->
     <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-10">
+        {% if request.user.is_authenticated %}
         <div class="flex items-center gap-3 mb-8">
             <span class="material-symbols-outlined text-4xl text-red-500" style="font-variation-settings: 'FILL' 1;">favorite</span>
             <div>
@@ -95,6 +96,23 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-20 text-center max-w-md mx-auto">
+            <div class="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-3">Save dishes you love</h1>
+            <p class="text-slate-500 font-medium mb-8 leading-relaxed">Sign in to save your favorite dishes and access them anytime.</p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full">
+                <a href="/login?next=/favourites" class="flex-1 bg-primary text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:bg-primary-dark transition-all duration-200">
+                    Sign In
+                </a>
+                <a href="/login?next=/favourites" class="flex-1 bg-white text-slate-700 font-bold py-3.5 px-6 rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all duration-200">
+                    Create Account
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </main>
 
     <!-- Mobile Bottom Nav -->
