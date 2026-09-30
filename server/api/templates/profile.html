@@ -58,7 +58,14 @@
             <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
             <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
             <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            {% if request.user.is_authenticated %}
+            <a href="/profile" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[20px]">account_circle</span>
+                Profile
+            </a>
+            {% else %}
             <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
+            {% endif %}
         </div>
     </nav>
 
@@ -101,9 +108,14 @@
                         <p class="text-sm font-semibold text-slate-800 bg-surface p-3 rounded-xl border border-slate-100">{{ request.user.email }}</p>
                     </div>
                 </div>
-                <button onclick="alert('Profile editing coming soon!')" class="w-full mt-6 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-xl font-bold transition-colors">
-                    Edit Profile
-                </button>
+                <div class="flex gap-4 mt-6">
+                    <button onclick="alert('Profile editing coming soon!')" class="flex-1 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-3 rounded-xl font-bold transition-colors">
+                        Edit Profile
+                    </button>
+                    <button hx-post="/api/v1/auth/logout" hx-swap="none" @htmx:after-request="window.location.href='/'" class="flex-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-4 py-3 rounded-xl font-bold transition-colors">
+                        Sign Out
+                    </button>
+                </div>
             </div>
 
             <!-- Dietary Snapshot -->

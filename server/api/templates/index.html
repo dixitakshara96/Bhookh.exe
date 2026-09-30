@@ -72,7 +72,14 @@
             <a href="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Home</a>
             <a href="/search-results" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Search</a>
             <a href="/favourites" class="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Saved</a>
+            {% if request.user.is_authenticated %}
+            <a href="/profile" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[20px]">account_circle</span>
+                Profile
+            </a>
+            {% else %}
             <a href="/login" class="text-sm font-bold text-slate-500 hover:text-primary transition-colors ml-4 border-l border-slate-300 pl-4">Sign In</a>
+            {% endif %}
         </div>
     </nav>
 
@@ -124,7 +131,7 @@
                         <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-800">Allergy Shield (Strict)</h3>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <template x-for="allergen in ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']">
+                        <template x-for="allergen in ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood', 'Sesame', 'Ghee', 'Nuts']">
                             <button type="button" @click="exclude.includes(allergen) ? exclude = exclude.filter(a => a !== allergen) : exclude.push(allergen)"
                                     :class="exclude.includes(allergen) ? 'bg-red-500 text-white border-red-500 shadow-md transform scale-105' : 'bg-surface-dark text-slate-600 border-transparent hover:bg-slate-200'"
                                     class="px-4 py-2 rounded-xl text-sm font-bold border transition-all duration-200 flex items-center gap-1">

@@ -177,7 +177,7 @@ def get_dishes(request):
     protein_min = request.GET.get('protein_min')
     cuisine = request.GET.get('cuisine')
     
-    qs = Dish.objects.filter(is_active=True).select_related('restaurant')
+    qs = Dish.objects.filter(is_active=True).select_related('restaurant').annotate(avg_rating=Avg('reviews__rating'))
 
     if q:
         from django.db.models import Q
@@ -295,7 +295,7 @@ def get_dish_details(request, dish_id):
             'average': round(reviews_agg['avg'], 1) if reviews_agg['avg'] else 0.0, 
             'count': reviews_agg['count']
         }
-        all_allergens = ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood']
+        all_allergens = ['Peanut', 'Dairy', 'Gluten', 'Soy', 'Egg', 'Seafood', 'Sesame', 'Ghee', 'Nuts']
         return render(request, 'partials/dish_details.html', {
             'dish': dish, 
             'all_allergens': all_allergens

@@ -11,7 +11,7 @@
             
             <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 shadow-sm">
                 <span class="material-symbols-outlined text-yellow-500 text-sm">star</span>
-                <span class="text-xs font-bold text-slate-800">4.5</span>
+                <span class="text-xs font-bold text-slate-800">{% if dish.avg_rating %}{{ dish.avg_rating|floatformat:1 }}{% else %}New{% endif %}</span>
             </div>
             
             {% if dish.ingredients_to_avoid %}

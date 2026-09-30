@@ -57,7 +57,7 @@
                     {% for allergen in dish.ingredients_to_avoid %}
                         <span class="bg-red-200 text-red-900 px-4 py-2 rounded-xl text-sm font-bold shadow-sm">{{ allergen }}</span>
                     {% empty %}
-                        <span class="text-red-700/60 text-sm font-medium italic">No major allergens reported.</span>
+                        <span class="text-red-700/60 text-sm font-medium italic">No reported allergens — check with restaurant for details.</span>
                     {% endfor %}
                 </div>
             </div>
@@ -65,7 +65,7 @@
             <!-- Avoids (Safe) -->
             <div class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 shadow-sm">
                 <h3 class="text-sm font-bold text-emerald-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">check_circle</span> Safe From (Avoids)
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span> Not Listed As Containing
                 </h3>
                 <div class="flex flex-wrap gap-2">
                     {% for allergen in all_allergens %}
@@ -78,6 +78,7 @@
                 </div>
             </div>
         </div>
+        <p class="text-xs text-slate-500 mt-4 italic">⚠ Allergen data is based on reported ingredients. Cross-contamination may occur. Always confirm with the restaurant before ordering if you have severe allergies.</p>
     </section>
 
     <!-- Ingredients -->
@@ -107,7 +108,7 @@
             <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
                 <span class="material-symbols-outlined text-xl">monitor_weight</span>
             </div>
-            <h2 class="text-2xl font-extrabold text-slate-900">Nutrition Facts</h2>
+            <h2 class="text-2xl font-extrabold text-slate-900">Nutrition Facts <span class="text-sm font-medium text-slate-400">(Estimated)</span></h2>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -4,7 +4,8 @@ from .decorators import optional_auth
 @optional_auth
 def index_page(request):
     from .models import Dish, UserPreference
-    trending_dishes = Dish.objects.select_related('restaurant').all()[:6]
+    from django.db.models import Avg
+    trending_dishes = Dish.objects.select_related('restaurant').annotate(avg_rating=Avg('reviews__rating')).all()[:6]
     prefs = None
     if request.user and request.user.is_authenticated:
         prefs, _ = UserPreference.objects.get_or_create(user=request.user)
