@@ -40,6 +40,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
                 </div>
             </div>
             
+            {% if request.user.is_authenticated %}
             <form hx-post="/api/v1/dishes/{{ dish.id }}/reviews" hx-swap="none" class="space-y-6" x-data="{ rating: 0 }">
                 {% csrf_token %}
                 
@@ -84,6 +85,17 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Nunito Sans', 'sans
                     </button>
                 </div>
             </form>
+            {% else %}
+            <div class="text-center py-12 bg-slate-50 rounded-2xl border border-slate-100">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-full mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                </div>
+                <p class="text-slate-600 font-bold mb-4">You must be signed in to share your experience.</p>
+                <a href="/login?next=/dishes/{{ dish.id }}/reviews" class="bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
+                    Sign In to Review
+                </a>
+            </div>
+            {% endif %}
             {% else %}
             <div class="flex flex-col items-center justify-center py-16 text-center">
                 <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4 border border-slate-200">

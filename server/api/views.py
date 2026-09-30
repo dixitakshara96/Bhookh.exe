@@ -177,7 +177,10 @@ def get_dishes(request):
     protein_min = request.GET.get('protein_min')
     cuisine = request.GET.get('cuisine')
     
-    qs = Dish.objects.filter(is_active=True).select_related('restaurant').annotate(avg_rating=Avg('reviews__rating'))
+    qs = Dish.objects.filter(is_active=True).select_related('restaurant').annotate(
+        avg_rating=Avg('reviews__rating'),
+        review_count=Count('reviews')
+    )
 
     if q:
         from django.db.models import Q
@@ -253,9 +256,12 @@ def get_dishes(request):
     total_pages = math.ceil(total_items / limit) if total_items > 0 else 0
     dishes = qs[(page - 1) * limit : page * limit]
 
+    if is_htmx(request) or request.path.endswith('/htmx'):
+        # Pass full objects to template for easy rendering
+        return render(request, 'partials/dish_list.html', {'dishes': dishes})
+
     items = []
     for dish in dishes:
-        reviews_agg = dish.reviews.aggregate(avg=Avg('rating'), count=Count('id'))
         items.append({
             "id": dish.id, "restaurant_id": dish.restaurant_id, "category_id": dish.category_id,
             "name": dish.name, "description": dish.description, "price": dish.price, 
@@ -271,12 +277,8 @@ def get_dishes(request):
                 "area": dish.restaurant.area,
                 "is_verified": dish.restaurant.is_verified
             },
-            "rating_summary": {"average": round(reviews_agg['avg'], 1) if reviews_agg['avg'] else 0.0, "count": reviews_agg['count']}
+            "rating_summary": {"average": round(dish.avg_rating, 1) if dish.avg_rating else 0.0, "count": dish.review_count}
         })
-
-    if is_htmx(request) or request.path.endswith('/htmx'):
-        # Pass full objects to template for easy rendering
-        return render(request, 'partials/dish_list.html', {'dishes': dishes})
 
     return JsonResponse({"data": {"items": items, "pagination": {"page": page, "limit": limit, "total_items": total_items, "total_pages": total_pages}}, "message": "Dishes fetched successfully."}, status=200)
 
@@ -483,6 +485,13 @@ def update_preferences(request):
     from .models import UserPreference
     prefs, _ = UserPreference.objects.get_or_create(user=request.user)
     
+    # Update User Profile (Name)
+    name = data.get('name')
+    if name and name.strip():
+        request.user.name = name.strip()
+        request.user.save()
+    
+    # Update Preferences
     allergies = data.get('allergies', '')
     if isinstance(allergies, list):
         prefs.allergies = allergies
@@ -503,7 +512,8 @@ def update_preferences(request):
     
     if is_htmx(request) or request.path.endswith('/htmx'):
         # For HTMX, return a success message or trigger a refresh
-        response = HttpResponse('<div class="text-emerald-600 font-bold text-sm bg-emerald-50 p-3 rounded-xl border border-emerald-200">Preferences updated successfully.</div>')
+        response = HttpResponse('<div class="text-emerald-600 font-bold text-sm bg-emerald-50 p-3 rounded-xl border border-emerald-200" id="prefs-message">Profile and preferences updated successfully.</div>')
+        response['HX-Refresh'] = 'true'
         return response
         
     return JsonResponse({"data": None, "message": "Preferences updated."}, status=200)
